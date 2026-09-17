@@ -6,7 +6,7 @@ import { createEncryptedRepository, type ContinuityDatabase } from '../../data/r
 
 const base = { id: z.string(), schemaVersion: z.number(), createdAt: z.string(), updatedAt: z.string() };
 export const addressSchema = z.object({ ...base, label: z.string(), line1: z.string(), city: z.string(), region: z.string(), postalCode: z.string(), country: z.string() });
-export const personSchema = z.object({ ...base, legalFirstName: z.string(), legalLastName: z.string(), role: z.enum(['adult', 'spouse_partner', 'child', 'dependent', 'guardian_candidate', 'other']) });
+export const personSchema = z.object({ ...base, legalFirstName: z.string(), legalLastName: z.string(), role: z.enum(['adult', 'spouse_partner', 'child', 'dependent', 'guardian_candidate', 'other']), preferredName: z.string().optional(), relationship: z.string().optional(), phone: z.string().optional(), email: z.string().optional(), addressIds: z.array(z.string()).optional(), governmentIdentifier: z.string().optional(), governmentIdentifierDisplayPolicy: z.enum(['full', 'last4', 'hidden']).optional(), employmentId: z.string().optional(), notes: z.string().optional() });
 export const householdSchema = z.object({ ...base, householdName: z.string().min(1), primaryAddressId: z.string(), primaryAdultPersonIds: z.array(z.string()), memberPersonIds: z.array(z.string()), jurisdictionCountry: z.string(), jurisdictionRegion: z.string(), preferredLocale: z.enum(['en', 'es']), reviewedSections: z.array(z.string()) });
 export type Household = z.infer<typeof householdSchema>;
 
