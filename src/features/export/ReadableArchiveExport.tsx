@@ -72,6 +72,10 @@ export function ReadableArchiveExport({
         `Financial agent: ${plan.financialAgent || 'Not recorded'} | Healthcare agent: ${plan.healthcareAgent || 'Not recorded'}`,
         `Instructions: ${plan.instructions || 'Not recorded'}`,
         '- [ ] Authority confirmed   - [ ] Contacts reached   - [ ] Critical bills reviewed   - [ ] Care plan activated',
+        'Notes: ________________________________________________________________',
+        '[PAGE_BREAK]',
+        'Follow-up notes: ______________________________________________________',
+        'Date: ____ / ____ / ______    Initials: __________    Reference: __________',
       ]));
     });
   }, [database, dek]);

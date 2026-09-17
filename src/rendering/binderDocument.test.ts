@@ -18,4 +18,9 @@ describe('canonical binder document', () => {
     const document = buildBinderDocument({}, { identifier: 'last4', balances: 'omit', letters: true, medical: true, digital: true }, {}, { insurance: ['Synthetic carrier | ••••1234'] });
     expect(document.sections.find((section) => section.id === 'insurance')?.blocks).toContainEqual({ type: 'paragraph', text: 'Synthetic carrier | ••••1234' });
   });
+
+  it('preserves explicit page breaks as renderer blocks', () => {
+    const document = buildBinderDocument({}, { identifier: 'last4', balances: 'omit', letters: true, medical: true, digital: true }, {}, { start: ['first page', '[PAGE_BREAK]', 'second page'] });
+    expect(document.sections.find((section) => section.id === 'start')?.blocks).toContainEqual({ type: 'pageBreak' });
+  });
 });

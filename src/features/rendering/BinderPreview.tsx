@@ -75,6 +75,10 @@ export function BinderPreview({
         `Household manager: ${plan.householdManager || 'Not recorded'} | Dependent-care contact: ${plan.dependentContact || 'Not recorded'}`,
         `Instructions: ${plan.instructions || 'Not recorded'}`,
         '☐ Authority confirmed   ☐ Contacts reached   ☐ Critical bills reviewed   ☐ Care plan activated',
+        'Notes: ________________________________________________________________',
+        '[PAGE_BREAK]',
+        'Follow-up notes: ______________________________________________________',
+        'Date: ____ / ____ / ______    Initials: __________    Reference: __________',
       ]));
     });
   }, [database, dek]);
@@ -222,10 +226,12 @@ export function BinderPreview({
         <h3>{t('preview')}</h3>
         <ol>
           {document.sections.map((section) => (
-            <li key={section.id}>
+            <li className={`binder-section binder-section-${section.id}`} key={section.id}>
               <strong>{section.title}</strong>
-              {section.blocks.map((block) => (
-                <p key={String(block.text)}>{String(block.text ?? '')}</p>
+              {section.blocks.map((block, index) => (
+                block.type === 'pageBreak'
+                  ? <div className="page-break" aria-hidden="true" key={`page-break-${index}`} />
+                  : <p key={`${String(block.text)}-${index}`}>{String(block.text ?? '')}</p>
               ))}
             </li>
           ))}

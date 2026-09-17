@@ -88,10 +88,9 @@ export function buildBinderDocument(
               : 'paragraph',
         text: sectionTitles[id] ?? id,
       },
-      ...(sectionContent[id] ?? []).map((text) => ({
-        type: 'paragraph' as const,
-        text,
-      })),
+      ...(sectionContent[id] ?? []).map((text) => text === '[PAGE_BREAK]'
+        ? { type: 'pageBreak' as const }
+        : { type: 'paragraph' as const, text }),
     ] as BinderBlock[],
   }));
   return {

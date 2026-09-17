@@ -90,6 +90,7 @@ p { line-height: 1.5; }
 .binder-cover { min-height: 360px; display: grid; place-content: center; text-align: center; break-after: page; }
 .binder-cover h2 { font-family: Georgia, 'Times New Roman', serif; font-size: 42px; }
 .binder-preview > ol > li { break-inside: avoid; margin: 20px 0; }
+.page-break { break-before: page; height: 0; }
 @media (max-width: 700px) { .table-scroll { overflow-x: auto; } .table-scroll table { min-width: 640px; } }
 @media print {
   @page { size: Letter; margin: .65in .65in .7in; }
@@ -103,5 +104,7 @@ p { line-height: 1.5; }
   thead { display: table-header-group; }
   tr, .section-card { break-inside: avoid; }
   a { color: #111; text-decoration: none; }
+  .paper-actions, .v2-feature .section-card { break-inside: avoid; }
+  .binder-section-incapacity { break-before: page; }
 }
 @media print { body.print-running .section-page > *:not(.running-schedule) { display: none !important; } body.print-running .running-schedule { display: block !important; } }

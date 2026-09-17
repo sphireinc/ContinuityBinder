@@ -39,4 +39,13 @@ describe('readable archive export', () => {
     expect(markdown).toContain('\\`text\\`');
     expect(Object.keys(zip.files).every((name) => !name.includes('..'))).toBe(true);
   });
+
+  it('exports canonical page breaks to HTML and Markdown', async () => {
+    const document = buildBinderDocument({}, { identifier: 'last4', balances: 'omit', letters: true, medical: true, digital: true }, {}, { start: ['first page', '[PAGE_BREAK]', 'second page'] });
+    const zip = await JSZip.loadAsync(await exportReadableArchive(document, 'en'));
+    const htmlName = Object.keys(zip.files).find((name) => name.endsWith('/html/02-start.html'))!;
+    const markdownName = Object.keys(zip.files).find((name) => name.endsWith('/markdown/02-start.md'))!;
+    expect(await zip.file(htmlName)!.async('string')).toContain('class="page-break"');
+    expect(await zip.file(markdownName)!.async('string')).toContain('\\pagebreak');
+  });
 });
