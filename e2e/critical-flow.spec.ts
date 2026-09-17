@@ -21,7 +21,7 @@ test('sets up a household, locks, and unlocks the binder', async ({ page }) => {
   await page.getByRole('button', { name: 'Unlock binder' }).click();
   await expect(page).toHaveURL(/\/binder\/overview$/);
   await page.getByRole('link', { name: 'Settings' }).click();
-  await page.getByRole('textbox', { name: 'Current passphrase' }).fill('a deliberately long passphrase');
+  await page.getByRole('textbox', { name: 'Current passphrase' }).first().fill('a deliberately long passphrase');
   await page.getByRole('textbox', { name: 'New passphrase', exact: true }).fill('a deliberately different passphrase');
   await page.getByRole('textbox', { name: 'Confirm new passphrase' }).fill('a deliberately different passphrase');
   await page.getByRole('button', { name: 'Change passphrase' }).last().click();
@@ -30,4 +30,21 @@ test('sets up a household, locks, and unlocks the binder', async ({ page }) => {
   await page.getByRole('textbox', { name: 'Passphrase', exact: true }).fill('a deliberately different passphrase');
   await page.getByRole('button', { name: 'Unlock binder' }).click();
   await expect(page).toHaveURL(/\/binder\/overview$/);
+  await page.getByRole('link', { name: 'Settings' }).click();
+  await page.getByRole('textbox', { name: 'Current passphrase' }).last().fill('a deliberately different passphrase');
+  await page.getByRole('textbox', { name: 'Type ERASE to confirm' }).fill('ERASE');
+  await page.getByRole('button', { name: 'Erase local binder' }).click();
+  await expect(page).toHaveURL(/\/$|\/\?erased=1$/);
+  await expect(page.getByRole('status')).toContainText('local binder was erased');
+  await expect.poll(async () => page.evaluate(() => new Promise<boolean>((resolve) => {
+    const request = window.indexedDB.open('continuity-binder');
+    request.onsuccess = () => {
+      const database = request.result;
+      const transaction = database.transaction('vault_meta', 'readonly');
+      const get = transaction.objectStore('vault_meta').get('header');
+      get.onsuccess = () => { resolve(get.result === undefined); database.close(); };
+      get.onerror = () => { resolve(true); database.close(); };
+    };
+    request.onerror = () => resolve(true);
+  }))).toBe(true);
 });

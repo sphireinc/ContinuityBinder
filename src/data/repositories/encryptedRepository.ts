@@ -44,4 +44,4 @@ export function createEncryptedRepository<T extends { id: string; schemaVersion:
 
 export async function putVaultHeader(db: ContinuityDatabase, header: VaultHeader) { await db.transaction('rw', db.vaultMeta, async () => { await db.vaultMeta.put({ key: 'header', header }); }); }
 export async function getVaultHeader(db: ContinuityDatabase) { return (await db.vaultMeta.get('header'))?.header ?? null; }
-export async function eraseVault(db: ContinuityDatabase) { await db.transaction('rw', [db.vaultMeta, db.encryptedRecords, db.migrationMeta, db.attachments], async () => { await Promise.all([db.vaultMeta.clear(), db.encryptedRecords.clear(), db.migrationMeta.clear(), db.attachments.clear()]); }); }
+export async function eraseVault(db: ContinuityDatabase) { await db.delete(); }

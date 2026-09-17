@@ -98,7 +98,7 @@ function PublicPage({
     </main>
   );
 }
-function Landing() {
+function Landing({ eraseNotice = false }: { eraseNotice?: boolean }) {
   const { t } = useTranslation(['common', 'landing']);
   return (
     <>
@@ -115,6 +115,7 @@ function Landing() {
         </nav>
       </header>
       <main>
+        {eraseNotice && <p role="status">Your local binder was erased from this browser.</p>}
         <section className="hero">
           <p className="eyebrow">{t('eyebrow', { ns: 'landing' })}</p>
           <h1>{t('headline', { ns: 'landing' })}</h1>
@@ -356,7 +357,7 @@ function ProtectedPage() {
     </section>
   );
 }
-function AutoLockSettings({ database, header, dek, onHeaderChanged }: { database: ContinuityDatabase | null; header: VaultHeader | null; dek: CryptoKey; onHeaderChanged: (header: VaultHeader) => void }) {
+function AutoLockSettings({ database, header, dek, onHeaderChanged, onErase }: { database: ContinuityDatabase | null; header: VaultHeader | null; dek: CryptoKey; onHeaderChanged: (header: VaultHeader) => void; onErase: () => Promise<void> }) {
   const { t } = useTranslation(['common', 'settings']);
   const [minutes, setMinutes] = useState(() =>
     Number(window.localStorage.getItem('continuity-binder-auto-lock') ?? 15),
@@ -366,6 +367,9 @@ function AutoLockSettings({ database, header, dek, onHeaderChanged }: { database
   const [newPassphrase, setNewPassphrase] = useState('');
   const [confirmNewPassphrase, setConfirmNewPassphrase] = useState('');
   const [passphraseStatus, setPassphraseStatus] = useState<'idle' | 'changed' | 'failed'>('idle');
+  const [erasePassphrase, setErasePassphrase] = useState('');
+  const [eraseConfirmation, setEraseConfirmation] = useState('');
+  const [eraseStatus, setEraseStatus] = useState<'idle' | 'failed'>('idle');
   const changePassphrase = async () => { if (!database || !header || newPassphrase.length < 12 || newPassphrase !== confirmNewPassphrase) { setPassphraseStatus('failed'); return; } try { await unlockVault(currentPassphrase, header); const nextHeader = await changeVaultPassphrase(dek, newPassphrase, header); await putVaultHeader(database, nextHeader); onHeaderChanged(nextHeader); setCurrentPassphrase(''); setNewPassphrase(''); setConfirmNewPassphrase(''); setPassphraseStatus('changed'); } catch { setPassphraseStatus('failed'); } };
   return (
     <section>
@@ -407,6 +411,7 @@ function AutoLockSettings({ database, header, dek, onHeaderChanged }: { database
         </p>
       )}
       <h2>{t('changePassphrase', { ns: 'settings' })}</h2><p>{t('changePassphraseHelp', { ns: 'settings' })}</p><label>{t('currentPassphrase', { ns: 'settings' })}<input type="password" value={currentPassphrase} onChange={(event) => setCurrentPassphrase(event.target.value)} /></label><label>{t('newPassphrase', { ns: 'settings' })}<input type="password" value={newPassphrase} onChange={(event) => setNewPassphrase(event.target.value)} /></label><label>{t('confirmNewPassphrase', { ns: 'settings' })}<input type="password" value={confirmNewPassphrase} onChange={(event) => setConfirmNewPassphrase(event.target.value)} /></label><button type="button" onClick={() => void changePassphrase()}>{t('change', { ns: 'settings' })}</button>{passphraseStatus === 'changed' && <p role="status">{t('changed', { ns: 'settings' })}</p>}{passphraseStatus === 'failed' && <p role="alert">{t('changeFailed', { ns: 'settings' })}</p>}
+      <h2>{t('eraseTitle', { ns: 'settings' })}</h2><p>{t('eraseBody', { ns: 'settings' })}</p><p>{t('eraseBackupReminder', { ns: 'settings' })}</p><form onSubmit={(event) => { event.preventDefault(); void unlockVault(erasePassphrase, header!).then(() => { if (eraseConfirmation !== 'ERASE') throw new Error('confirmation'); return onErase(); }).catch(() => setEraseStatus('failed')); }}><label>{t('erasePassphrase', { ns: 'settings' })}<input type="password" value={erasePassphrase} onChange={(event) => setErasePassphrase(event.target.value)} /></label><label>{t('eraseConfirmation', { ns: 'settings' })}<input value={eraseConfirmation} onChange={(event) => setEraseConfirmation(event.target.value)} /></label>{eraseStatus === 'failed' && <p role="alert">{t('eraseFailed', { ns: 'settings' })}</p>}<button type="submit">{t('eraseButton', { ns: 'settings' })}</button></form>
     </section>
   );
 }
@@ -444,13 +449,14 @@ export function App() {
     setDek(null);
     setHeader(null);
   };
+  const eraseFromSettings = async () => { await clearVault(); window.location.assign('/?erased=1'); };
   const restored = () => {
     setDek(null);
     if (database) void getVaultHeader(database).then(setHeader);
   };
   return (
     <Routes>
-      <Route path="/" element={<Landing />} />
+      <Route path="/" element={<Landing eraseNotice={window.location.search === '?erased=1'} />} />
       <Route path="/privacy" element={<PublicPage titleKey="privacy" />} />
       <Route path="/security" element={<PublicPage titleKey="security" />} />
       <Route path="/disclaimer" element={<PublicPage titleKey="terms" />} />
@@ -557,7 +563,7 @@ export function App() {
               path={path}
               element={
                 path === 'settings/security' ? (
-                  <AutoLockSettings database={database} header={header} dek={dek!} onHeaderChanged={setHeader} />
+                  <AutoLockSettings database={database} header={header} dek={dek!} onHeaderChanged={setHeader} onErase={eraseFromSettings} />
                 ) : path === 'backup-restore' ? (
                   <EncryptedBackup database={database} />
                 ) : path === 'legal-estate' ? (
