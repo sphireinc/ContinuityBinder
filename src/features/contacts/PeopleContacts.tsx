@@ -2,21 +2,105 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import { TextArea, TextField, SelectField } from '../../components/forms';
-import { createEncryptedRepository, type ContinuityDatabase } from '../../data/repositories/encryptedRepository';
+import {
+  createEncryptedRepository,
+  type ContinuityDatabase,
+} from '../../data/repositories/encryptedRepository';
 import { addressSchema, personSchema } from '../household/HouseholdSetup';
 
-const base = { id: z.string(), schemaVersion: z.number(), createdAt: z.string(), updatedAt: z.string() };
-export const contactSchema = z.object({ ...base, displayName: z.string().min(1), role: z.enum(['attorney', 'cpa', 'financialAdviser', 'insuranceAgent', 'funeralHome', 'clergy', 'physician', 'veterinarian', 'school', 'employerHr', 'businessPartner', 'propertyService', 'friendFamily', 'other']), phone: z.string().optional(), email: z.string().optional(), addressId: z.string().optional(), notes: z.string().optional(), priority: z.string().optional(), purpose: z.string().optional(), caller: z.string().optional() });
+const base = {
+  id: z.string(),
+  schemaVersion: z.number(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+};
+export const contactSchema = z.object({
+  ...base,
+  displayName: z.string().min(1),
+  role: z.enum([
+    'attorney',
+    'cpa',
+    'financialAdviser',
+    'insuranceAgent',
+    'funeralHome',
+    'clergy',
+    'physician',
+    'veterinarian',
+    'school',
+    'employerHr',
+    'businessPartner',
+    'propertyService',
+    'friendFamily',
+    'other',
+  ]),
+  phone: z.string().optional(),
+  email: z.string().optional(),
+  addressId: z.string().optional(),
+  notes: z.string().optional(),
+  priority: z.string().optional(),
+  purpose: z.string().optional(),
+  caller: z.string().optional(),
+});
 type Person = z.infer<typeof personSchema>;
 type Contact = z.infer<typeof contactSchema>;
 type Address = z.infer<typeof addressSchema>;
-const householdRoles = ['adult', 'spouse_partner', 'child', 'dependent', 'guardian_candidate', 'other'] as const;
-const contactRoles = ['attorney', 'cpa', 'financialAdviser', 'insuranceAgent', 'funeralHome', 'clergy', 'physician', 'veterinarian', 'school', 'employerHr', 'businessPartner', 'propertyService', 'friendFamily', 'other'] as const;
+const householdRoles = [
+  'adult',
+  'spouse_partner',
+  'child',
+  'dependent',
+  'guardian_candidate',
+  'other',
+] as const;
+const contactRoles = [
+  'attorney',
+  'cpa',
+  'financialAdviser',
+  'insuranceAgent',
+  'funeralHome',
+  'clergy',
+  'physician',
+  'veterinarian',
+  'school',
+  'employerHr',
+  'businessPartner',
+  'propertyService',
+  'friendFamily',
+  'other',
+] as const;
 
-const emptyPerson = { firstName: '', lastName: '', preferredName: '', role: 'adult', relationship: '', phone: '', email: '', governmentIdentifier: '', notes: '', addressId: '' };
-const emptyContact = { displayName: '', role: 'attorney', phone: '', email: '', notes: '', priority: '', purpose: '', caller: '', addressId: '' };
+const emptyPerson = {
+  firstName: '',
+  lastName: '',
+  preferredName: '',
+  role: 'adult',
+  relationship: '',
+  phone: '',
+  email: '',
+  governmentIdentifier: '',
+  employmentId: '',
+  notes: '',
+  addressId: '',
+};
+const emptyContact = {
+  displayName: '',
+  role: 'attorney',
+  phone: '',
+  email: '',
+  notes: '',
+  priority: '',
+  purpose: '',
+  caller: '',
+  addressId: '',
+};
 
-export function PeopleContacts({ database, dek }: { database: ContinuityDatabase | null; dek: CryptoKey }) {
+export function PeopleContacts({
+  database,
+  dek,
+}: {
+  database: ContinuityDatabase | null;
+  dek: CryptoKey;
+}) {
   const { t } = useTranslation('contacts');
   const [people, setPeople] = useState<Person[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -24,12 +108,422 @@ export function PeopleContacts({ database, dek }: { database: ContinuityDatabase
   const [person, setPerson] = useState(emptyPerson);
   const [contact, setContact] = useState(emptyContact);
   const [editingContactId, setEditingContactId] = useState<string | null>(null);
-  const [address, setAddress] = useState({ label: '', line1: '', city: '', region: '', postalCode: '', country: '' });
+  const [address, setAddress] = useState({
+    label: '',
+    line1: '',
+    city: '',
+    region: '',
+    postalCode: '',
+    country: '',
+  });
   const [saved, setSaved] = useState(false);
-  const load = () => { if (!database) return; void Promise.all([createEncryptedRepository(database, dek, 'Person', personSchema).list(), createEncryptedRepository(database, dek, 'Contact', contactSchema).list(), createEncryptedRepository(database, dek, 'Address', addressSchema).list()]).then(([nextPeople, nextContacts, nextAddresses]) => { setPeople(nextPeople); setContacts(nextContacts); setAddresses(nextAddresses); }); };
+  const load = () => {
+    if (!database) return;
+    void Promise.all([
+      createEncryptedRepository(database, dek, 'Person', personSchema).list(),
+      createEncryptedRepository(database, dek, 'Contact', contactSchema).list(),
+      createEncryptedRepository(database, dek, 'Address', addressSchema).list(),
+    ]).then(([nextPeople, nextContacts, nextAddresses]) => {
+      setPeople(nextPeople);
+      setContacts(nextContacts);
+      setAddresses(nextAddresses);
+    });
+  };
   useEffect(load, [database, dek]);
-  const savePerson = async (event: FormEvent) => { event.preventDefault(); if (!database || !person.firstName.trim() || !person.lastName.trim()) return; const now = new Date().toISOString(); await createEncryptedRepository(database, dek, 'Person', personSchema).put({ id: crypto.randomUUID(), schemaVersion: 1, createdAt: now, updatedAt: now, legalFirstName: person.firstName.trim(), legalLastName: person.lastName.trim(), preferredName: person.preferredName.trim() || undefined, role: person.role as Person['role'], relationship: person.relationship.trim() || undefined, phone: person.phone.trim() || undefined, email: person.email.trim() || undefined, addressIds: person.addressId ? [person.addressId] : [], governmentIdentifier: person.governmentIdentifier.trim() || undefined, governmentIdentifierDisplayPolicy: person.governmentIdentifier.trim() ? 'hidden' : undefined, notes: person.notes.trim() || undefined }); setPerson(emptyPerson); setSaved(true); load(); };
-  const saveContact = async (event: FormEvent) => { event.preventDefault(); if (!database || !contact.displayName.trim()) return; const now = new Date().toISOString(); await createEncryptedRepository(database, dek, 'Contact', contactSchema).put({ id: editingContactId ?? crypto.randomUUID(), schemaVersion: 1, createdAt: now, updatedAt: now, displayName: contact.displayName.trim(), role: contact.role as Contact['role'], phone: contact.phone.trim() || undefined, email: contact.email.trim() || undefined, addressId: contact.addressId || undefined, notes: contact.notes.trim() || undefined, priority: contact.priority.trim() || undefined, purpose: contact.purpose.trim() || undefined, caller: contact.caller.trim() || undefined }); setContact(emptyContact); setEditingContactId(null); setSaved(true); load(); };
-  const saveAddress = async (event: FormEvent) => { event.preventDefault(); if (!database || !address.label.trim() || !address.line1.trim()) return; const now = new Date().toISOString(); await createEncryptedRepository(database, dek, 'Address', addressSchema).put({ id: crypto.randomUUID(), schemaVersion: 1, createdAt: now, updatedAt: now, ...address }); setAddress({ label: '', line1: '', city: '', region: '', postalCode: '', country: '' }); setSaved(true); load(); };
-  return <section className="section-page"><p className="eyebrow">{t('title')}</p><h2>{t('title')}</h2><div className="section-card"><h3>{t('addPerson')}</h3><form onSubmit={(event) => void savePerson(event)}><TextField label={t('firstName')} value={person.firstName} onChange={(event) => setPerson({ ...person, firstName: event.target.value })} required /><TextField label={t('lastName')} value={person.lastName} onChange={(event) => setPerson({ ...person, lastName: event.target.value })} required /><TextField label={t('preferredName')} value={person.preferredName} onChange={(event) => setPerson({ ...person, preferredName: event.target.value })} /><SelectField label={t('role')} value={person.role} onChange={(event) => setPerson({ ...person, role: event.target.value })} options={householdRoles.map((role) => ({ value: role, label: role }))} /><TextField label={t('relationship')} value={person.relationship} onChange={(event) => setPerson({ ...person, relationship: event.target.value })} /><TextField label={t('phone')} value={person.phone} onChange={(event) => setPerson({ ...person, phone: event.target.value })} /><TextField label={t('email')} type="email" value={person.email} onChange={(event) => setPerson({ ...person, email: event.target.value })} /><SelectField label={t('address')} value={person.addressId} onChange={(event) => setPerson({ ...person, addressId: event.target.value })} options={[{ value: '', label: t('noAddress') }, ...addresses.map((item) => ({ value: item.id, label: item.label }))]} /><TextField label={t('governmentIdentifier')} value={person.governmentIdentifier} onChange={(event) => setPerson({ ...person, governmentIdentifier: event.target.value })} helpText={t('identifierHelp')} /><TextArea label={t('notes')} value={person.notes} onChange={(event) => setPerson({ ...person, notes: event.target.value })} /><button className="button button-primary">{t('save')}</button></form></div><div className="section-card"><h3>{t('directory')}</h3><form onSubmit={(event) => void saveContact(event)}><TextField label={t('name')} value={contact.displayName} onChange={(event) => setContact({ ...contact, displayName: event.target.value })} required /><SelectField label={t('contactRole')} value={contact.role} onChange={(event) => setContact({ ...contact, role: event.target.value })} options={contactRoles.map((role) => ({ value: role, label: t(`roles.${role}`) }))} /><TextField label={t('priority')} value={contact.priority} onChange={(event) => setContact({ ...contact, priority: event.target.value })} /><TextField label={t('purpose')} value={contact.purpose} onChange={(event) => setContact({ ...contact, purpose: event.target.value })} /><TextField label={t('caller')} value={contact.caller} onChange={(event) => setContact({ ...contact, caller: event.target.value })} /><TextField label={t('phone')} value={contact.phone} onChange={(event) => setContact({ ...contact, phone: event.target.value })} /><TextField label={t('email')} type="email" value={contact.email} onChange={(event) => setContact({ ...contact, email: event.target.value })} /><SelectField label={t('address')} value={contact.addressId} onChange={(event) => setContact({ ...contact, addressId: event.target.value })} options={[{ value: '', label: t('noAddress') }, ...addresses.map((item) => ({ value: item.id, label: item.label }))]} /><TextArea label={t('notes')} value={contact.notes} onChange={(event) => setContact({ ...contact, notes: event.target.value })} /><button className="button button-primary">{editingContactId ? t('update') : t('save')}</button></form>{saved && <p role="status">{t('saved')}</p>}<ul>{contacts.length === 0 ? <li>{t('noContacts')}</li> : contacts.map((item) => <li key={item.id}>{item.displayName} — {t(`roles.${item.role}`)} <button type="button" onClick={() => { setEditingContactId(item.id); setContact({ displayName: item.displayName, role: item.role, phone: item.phone ?? '', email: item.email ?? '', notes: item.notes ?? '', priority: item.priority ?? '', purpose: item.purpose ?? '', caller: item.caller ?? '', addressId: item.addressId ?? '' }); }}>{t('edit')}</button></li>)}</ul></div><div className="section-card"><h3>{t('addressBook')}</h3><form onSubmit={(event) => void saveAddress(event)}><TextField label={t('addressLabel')} value={address.label} onChange={(event) => setAddress({ ...address, label: event.target.value })} required /><TextField label={t('address')} value={address.line1} onChange={(event) => setAddress({ ...address, line1: event.target.value })} required /><TextField label={t('city')} value={address.city} onChange={(event) => setAddress({ ...address, city: event.target.value })} /><TextField label={t('region')} value={address.region} onChange={(event) => setAddress({ ...address, region: event.target.value })} /><TextField label={t('postalCode')} value={address.postalCode} onChange={(event) => setAddress({ ...address, postalCode: event.target.value })} /><TextField label={t('country')} value={address.country} onChange={(event) => setAddress({ ...address, country: event.target.value })} /><button className="button button-primary">{t('save')}</button></form></div><div className="section-card"><h3>{t('people')}</h3>{people.length === 0 ? <p>{t('noPeople')}</p> : <ul>{people.map((item) => <li key={item.id}>{item.preferredName || `${item.legalFirstName} ${item.legalLastName}`} — {t('complete')}: {t('completeValue', { count: Number(Boolean(item.phone)) + Number(Boolean(item.email)) })}</li>)}</ul>}</div><div className="section-card"><h3>{t('professionals')}</h3>{contacts.filter((item) => item.role !== 'friendFamily' && item.role !== 'other').length === 0 ? <p>{t('noProfessionals')}</p> : <ul>{contacts.filter((item) => item.role !== 'friendFamily' && item.role !== 'other').map((item) => <li key={item.id}>{item.displayName} — {t(`roles.${item.role}`)}</li>)}</ul>}</div></section>;
+  const savePerson = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!database || !person.firstName.trim() || !person.lastName.trim())
+      return;
+    const now = new Date().toISOString();
+    await createEncryptedRepository(database, dek, 'Person', personSchema).put({
+      id: crypto.randomUUID(),
+      schemaVersion: 1,
+      createdAt: now,
+      updatedAt: now,
+      legalFirstName: person.firstName.trim(),
+      legalLastName: person.lastName.trim(),
+      preferredName: person.preferredName.trim() || undefined,
+      role: person.role as Person['role'],
+      relationship: person.relationship.trim() || undefined,
+      phone: person.phone.trim() || undefined,
+      email: person.email.trim() || undefined,
+      addressIds: person.addressId ? [person.addressId] : [],
+      governmentIdentifier: person.governmentIdentifier.trim() || undefined,
+      governmentIdentifierDisplayPolicy: person.governmentIdentifier.trim()
+        ? 'hidden'
+        : undefined,
+      employmentId: person.employmentId.trim() || undefined,
+      notes: person.notes.trim() || undefined,
+    });
+    setPerson(emptyPerson);
+    setSaved(true);
+    load();
+  };
+  const saveContact = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!database || !contact.displayName.trim()) return;
+    const now = new Date().toISOString();
+    await createEncryptedRepository(
+      database,
+      dek,
+      'Contact',
+      contactSchema,
+    ).put({
+      id: editingContactId ?? crypto.randomUUID(),
+      schemaVersion: 1,
+      createdAt: now,
+      updatedAt: now,
+      displayName: contact.displayName.trim(),
+      role: contact.role as Contact['role'],
+      phone: contact.phone.trim() || undefined,
+      email: contact.email.trim() || undefined,
+      addressId: contact.addressId || undefined,
+      notes: contact.notes.trim() || undefined,
+      priority: contact.priority.trim() || undefined,
+      purpose: contact.purpose.trim() || undefined,
+      caller: contact.caller.trim() || undefined,
+    });
+    setContact(emptyContact);
+    setEditingContactId(null);
+    setSaved(true);
+    load();
+  };
+  const saveAddress = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!database || !address.label.trim() || !address.line1.trim()) return;
+    const now = new Date().toISOString();
+    await createEncryptedRepository(
+      database,
+      dek,
+      'Address',
+      addressSchema,
+    ).put({
+      id: crypto.randomUUID(),
+      schemaVersion: 1,
+      createdAt: now,
+      updatedAt: now,
+      ...address,
+    });
+    setAddress({
+      label: '',
+      line1: '',
+      city: '',
+      region: '',
+      postalCode: '',
+      country: '',
+    });
+    setSaved(true);
+    load();
+  };
+  return (
+    <section className="section-page">
+      <p className="eyebrow">{t('title')}</p>
+      <h2>{t('title')}</h2>
+      <div className="section-card">
+        <h3>{t('addPerson')}</h3>
+        <form onSubmit={(event) => void savePerson(event)}>
+          <TextField
+            label={t('firstName')}
+            value={person.firstName}
+            onChange={(event) =>
+              setPerson({ ...person, firstName: event.target.value })
+            }
+            required
+          />
+          <TextField
+            label={t('lastName')}
+            value={person.lastName}
+            onChange={(event) =>
+              setPerson({ ...person, lastName: event.target.value })
+            }
+            required
+          />
+          <TextField
+            label={t('preferredName')}
+            value={person.preferredName}
+            onChange={(event) =>
+              setPerson({ ...person, preferredName: event.target.value })
+            }
+          />
+          <SelectField
+            label={t('role')}
+            value={person.role}
+            onChange={(event) =>
+              setPerson({ ...person, role: event.target.value })
+            }
+            options={householdRoles.map((role) => ({
+              value: role,
+              label: role,
+            }))}
+          />
+          <TextField
+            label={t('relationship')}
+            value={person.relationship}
+            onChange={(event) =>
+              setPerson({ ...person, relationship: event.target.value })
+            }
+          />
+          <TextField
+            label={t('phone')}
+            value={person.phone}
+            onChange={(event) =>
+              setPerson({ ...person, phone: event.target.value })
+            }
+          />
+          <TextField
+            label={t('email')}
+            type="email"
+            value={person.email}
+            onChange={(event) =>
+              setPerson({ ...person, email: event.target.value })
+            }
+          />
+          <SelectField
+            label={t('address')}
+            value={person.addressId}
+            onChange={(event) =>
+              setPerson({ ...person, addressId: event.target.value })
+            }
+            options={[
+              { value: '', label: t('noAddress') },
+              ...addresses.map((item) => ({
+                value: item.id,
+                label: item.label,
+              })),
+            ]}
+          />
+          <TextField
+            label={t('governmentIdentifier')}
+            value={person.governmentIdentifier}
+            onChange={(event) =>
+              setPerson({ ...person, governmentIdentifier: event.target.value })
+            }
+            helpText={t('identifierHelp')}
+          />
+          <TextField
+            label={t('employment', {
+              defaultValue: 'Employment record reference (optional)',
+            })}
+            value={person.employmentId}
+            onChange={(event) =>
+              setPerson({ ...person, employmentId: event.target.value })
+            }
+          />
+          <TextArea
+            label={t('notes')}
+            value={person.notes}
+            onChange={(event) =>
+              setPerson({ ...person, notes: event.target.value })
+            }
+          />
+          <button className="button button-primary">{t('save')}</button>
+        </form>
+      </div>
+      <div className="section-card">
+        <h3>{t('directory')}</h3>
+        <form onSubmit={(event) => void saveContact(event)}>
+          <TextField
+            label={t('name')}
+            value={contact.displayName}
+            onChange={(event) =>
+              setContact({ ...contact, displayName: event.target.value })
+            }
+            required
+          />
+          <SelectField
+            label={t('contactRole')}
+            value={contact.role}
+            onChange={(event) =>
+              setContact({ ...contact, role: event.target.value })
+            }
+            options={contactRoles.map((role) => ({
+              value: role,
+              label: t(`roles.${role}`),
+            }))}
+          />
+          <TextField
+            label={t('priority')}
+            value={contact.priority}
+            onChange={(event) =>
+              setContact({ ...contact, priority: event.target.value })
+            }
+          />
+          <TextField
+            label={t('purpose')}
+            value={contact.purpose}
+            onChange={(event) =>
+              setContact({ ...contact, purpose: event.target.value })
+            }
+          />
+          <TextField
+            label={t('caller')}
+            value={contact.caller}
+            onChange={(event) =>
+              setContact({ ...contact, caller: event.target.value })
+            }
+          />
+          <TextField
+            label={t('phone')}
+            value={contact.phone}
+            onChange={(event) =>
+              setContact({ ...contact, phone: event.target.value })
+            }
+          />
+          <TextField
+            label={t('email')}
+            type="email"
+            value={contact.email}
+            onChange={(event) =>
+              setContact({ ...contact, email: event.target.value })
+            }
+          />
+          <SelectField
+            label={t('address')}
+            value={contact.addressId}
+            onChange={(event) =>
+              setContact({ ...contact, addressId: event.target.value })
+            }
+            options={[
+              { value: '', label: t('noAddress') },
+              ...addresses.map((item) => ({
+                value: item.id,
+                label: item.label,
+              })),
+            ]}
+          />
+          <TextArea
+            label={t('notes')}
+            value={contact.notes}
+            onChange={(event) =>
+              setContact({ ...contact, notes: event.target.value })
+            }
+          />
+          <button className="button button-primary">
+            {editingContactId ? t('update') : t('save')}
+          </button>
+        </form>
+        {saved && <p role="status">{t('saved')}</p>}
+        <ul>
+          {contacts.length === 0 ? (
+            <li>{t('noContacts')}</li>
+          ) : (
+            contacts.map((item) => (
+              <li key={item.id}>
+                {item.displayName} — {t(`roles.${item.role}`)}{' '}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingContactId(item.id);
+                    setContact({
+                      displayName: item.displayName,
+                      role: item.role,
+                      phone: item.phone ?? '',
+                      email: item.email ?? '',
+                      notes: item.notes ?? '',
+                      priority: item.priority ?? '',
+                      purpose: item.purpose ?? '',
+                      caller: item.caller ?? '',
+                      addressId: item.addressId ?? '',
+                    });
+                  }}
+                >
+                  {t('edit')}
+                </button>
+              </li>
+            ))
+          )}
+        </ul>
+      </div>
+      <div className="section-card">
+        <h3>{t('addressBook')}</h3>
+        <form onSubmit={(event) => void saveAddress(event)}>
+          <TextField
+            label={t('addressLabel')}
+            value={address.label}
+            onChange={(event) =>
+              setAddress({ ...address, label: event.target.value })
+            }
+            required
+          />
+          <TextField
+            label={t('address')}
+            value={address.line1}
+            onChange={(event) =>
+              setAddress({ ...address, line1: event.target.value })
+            }
+            required
+          />
+          <TextField
+            label={t('city')}
+            value={address.city}
+            onChange={(event) =>
+              setAddress({ ...address, city: event.target.value })
+            }
+          />
+          <TextField
+            label={t('region')}
+            value={address.region}
+            onChange={(event) =>
+              setAddress({ ...address, region: event.target.value })
+            }
+          />
+          <TextField
+            label={t('postalCode')}
+            value={address.postalCode}
+            onChange={(event) =>
+              setAddress({ ...address, postalCode: event.target.value })
+            }
+          />
+          <TextField
+            label={t('country')}
+            value={address.country}
+            onChange={(event) =>
+              setAddress({ ...address, country: event.target.value })
+            }
+          />
+          <button className="button button-primary">{t('save')}</button>
+        </form>
+      </div>
+      <div className="section-card">
+        <h3>{t('people')}</h3>
+        {people.length === 0 ? (
+          <p>{t('noPeople')}</p>
+        ) : (
+          <ul>
+            {people.map((item) => (
+              <li key={item.id}>
+                {item.preferredName ||
+                  `${item.legalFirstName} ${item.legalLastName}`}{' '}
+                — {t('complete')}:{' '}
+                {t('completeValue', {
+                  count:
+                    Number(Boolean(item.phone)) + Number(Boolean(item.email)),
+                })}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      <div className="section-card">
+        <h3>{t('professionals')}</h3>
+        {contacts.filter(
+          (item) => item.role !== 'friendFamily' && item.role !== 'other',
+        ).length === 0 ? (
+          <p>{t('noProfessionals')}</p>
+        ) : (
+          <ul>
+            {contacts
+              .filter(
+                (item) => item.role !== 'friendFamily' && item.role !== 'other',
+              )
+              .map((item) => (
+                <li key={item.id}>
+                  {item.displayName} — {t(`roles.${item.role}`)}
+                </li>
+              ))}
+          </ul>
+        )}
+      </div>
+    </section>
+  );
 }
