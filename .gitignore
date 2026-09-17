@@ -1,2 +1,7 @@
 tasks
 *.zip
+node_modules/
+dist/
+coverage/
+.DS_Store
+original-task-zips
