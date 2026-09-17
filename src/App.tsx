@@ -1,10 +1,23 @@
 /* global navigator */
 import { useEffect, useState } from 'react';
-import { Link, Navigate, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import {
+  Link,
+  Navigate,
+  Outlet,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LanguageSelector } from './i18n/LanguageSelector';
 import { createVault, unlockVault, type VaultHeader } from './crypto/vault';
-import { ContinuityDatabase, eraseVault, getVaultHeader, putVaultHeader } from './data/repositories/encryptedRepository';
+import {
+  ContinuityDatabase,
+  eraseVault,
+  getVaultHeader,
+  putVaultHeader,
+} from './data/repositories/encryptedRepository';
 import { Dashboard } from './features/overview/Dashboard';
 import { HouseholdSetup } from './features/household/HouseholdSetup';
 import { ImmediateResponse } from './features/immediate-response/ImmediateResponse';
@@ -24,21 +37,535 @@ import { BinderPreview } from './features/rendering/BinderPreview';
 import { ReadableArchiveExport } from './features/export/ReadableArchiveExport';
 import { EncryptedBackup } from './features/backup/EncryptedBackup';
 import { buildDiagnosticInfo } from './diagnostics';
+import { Help } from './features/help/Help';
 
 const navigation = [
-  ['overview', 'overview'], ['householdSetup', 'household-setup'], ['startHere', 'start-here'], ['first72Hours', 'first-72-hours'], ['doNotDoImmediately', 'do-not-do-immediately'], ['peopleToNotify', 'people-to-notify'], ['peopleContacts', 'people-contacts'],
-  ['legalEstate', 'legal-estate'], ['moneyBenefits', 'money-benefits'], ['bankingInvestments', 'banking-investments'], ['debtsObligations', 'debts-obligations'], ['property', 'property'], ['businessEmployment', 'business-employment'],
-  ['digitalAccess', 'digital-access'], ['familyContinuity', 'family-continuity'], ['taxRecords', 'tax-records'],
-  ['wishesLegacy', 'wishes-legacy'], ['review', 'review'], ['preview', 'preview'], ['export', 'export'],
-  ['backupRestore', 'backup-restore'], ['settings', 'settings/security'],
+  ['overview', 'overview'],
+  ['householdSetup', 'household-setup'],
+  ['startHere', 'start-here'],
+  ['first72Hours', 'first-72-hours'],
+  ['doNotDoImmediately', 'do-not-do-immediately'],
+  ['peopleToNotify', 'people-to-notify'],
+  ['peopleContacts', 'people-contacts'],
+  ['legalEstate', 'legal-estate'],
+  ['moneyBenefits', 'money-benefits'],
+  ['bankingInvestments', 'banking-investments'],
+  ['debtsObligations', 'debts-obligations'],
+  ['property', 'property'],
+  ['businessEmployment', 'business-employment'],
+  ['digitalAccess', 'digital-access'],
+  ['familyContinuity', 'family-continuity'],
+  ['taxRecords', 'tax-records'],
+  ['wishesLegacy', 'wishes-legacy'],
+  ['review', 'review'],
+  ['preview', 'preview'],
+  ['export', 'export'],
+  ['backupRestore', 'backup-restore'],
+  ['settings', 'settings/security'],
 ] as const;
 
-function PublicPage({ titleKey }: { titleKey: 'privacy' | 'security' | 'terms' | 'notFound' }) { const { t } = useTranslation(['common', 'public']); const contentKey = titleKey === 'privacy' ? 'privacy' : titleKey === 'security' ? 'security' : titleKey === 'terms' ? 'terms' : ''; const paragraphs = contentKey ? (t(`${contentKey}Body`, { ns: 'public', returnObjects: true }) as string[]) : [t('tagline')]; return <main className="public-page"><Link to="/">{t('backToApp')}</Link><h1>{contentKey ? t(`${contentKey}Title`, { ns: 'public' }) : t(titleKey)}</h1>{paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</main>; }
-function Landing() { const { t } = useTranslation(['common', 'landing']); return <><header className="site-header"><Link className="wordmark" to="/"><span>{t('appName')}</span><small>{t('localFirst')}</small></Link><LanguageSelector /><nav aria-label={t('primary', { ns: 'navigation' })}><a href="#privacy">{t('privacy')}</a><a href="#how-it-works">{t('howItWorks')}</a></nav></header><main><section className="hero"><p className="eyebrow">{t('eyebrow', { ns: 'landing' })}</p><h1>{t('headline', { ns: 'landing' })}</h1><p className="hero-copy">{t('description', { ns: 'landing' })}</p><p className="trust-statement">{t('trust', { ns: 'landing' })}</p><Link className="button button-primary" to="/binder/setup">{t('cta', { ns: 'landing' })}</Link><p className="free-note">{t('freeNote', { ns: 'landing' })}</p><p className="quiet-note">{t('quietNote', { ns: 'landing' })}</p></section><section className="trust-strip" id="privacy" aria-label={t('privacy')}><article><h2>{t('localTitle', { ns: 'landing' })}</h2><p>{t('localBody', { ns: 'landing' })}</p></article><article><h2>{t('encryptedTitle', { ns: 'landing' })}</h2><p>{t('encryptedBody', { ns: 'landing' })}</p></article><article><h2>{t('noTrackingTitle', { ns: 'landing' })}</h2><p>{t('noTrackingBody', { ns: 'landing' })}</p></article></section><section className="how-it-works" id="how-it-works"><h2>{t('howTitle', { ns: 'landing' })}</h2><div className="steps"><article><h3>{t('stepOneTitle', { ns: 'landing' })}</h3><p>{t('stepOneBody', { ns: 'landing' })}</p></article><article><h3>{t('stepTwoTitle', { ns: 'landing' })}</h3><p>{t('stepTwoBody', { ns: 'landing' })}</p></article><article><h3>{t('stepThreeTitle', { ns: 'landing' })}</h3><p>{t('stepThreeBody', { ns: 'landing' })}</p></article></div></section><section className="security-clarification"><h2>{t('clarificationTitle', { ns: 'landing' })}</h2><p>{t('clarificationBody', { ns: 'landing' })}</p></section></main></>; }
-function Setup({ onCreated }: { onCreated: (header: VaultHeader, dek: CryptoKey) => void }) { const navigate = useNavigate(); const { t } = useTranslation(); const [passphrase, setPassphrase] = useState(''); const [confirmation, setConfirmation] = useState(''); const [acknowledged, setAcknowledged] = useState(false); const valid = passphrase.length >= 12 && passphrase === confirmation && acknowledged; return <main className="public-page"><p className="eyebrow">{t('appName')}</p><h1>{t('setupTitle')}</h1><p>{t('setupBody')}</p><p>{t('noRecovery')}</p><form onSubmit={(event) => { event.preventDefault(); void createVault(passphrase).then(({ header, dek }) => { onCreated(header, dek); navigate('/binder/overview'); }); }}><label>{t('passphrase')}<input type="password" autoComplete="new-password" value={passphrase} onChange={(event) => setPassphrase(event.target.value)} /></label><label>{t('confirmPassphrase')}<input type="password" autoComplete="new-password" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} /></label><p>{t('passphraseRequirements')}</p><label><input type="checkbox" checked={acknowledged} onChange={(event) => setAcknowledged(event.target.checked)} /> {t('passphraseAcknowledgment')}</label><button className="button button-primary" disabled={!valid}>{t('createBinder')}</button></form></main>; }
-function Unlock({ header, onUnlock, onErase }: { header: VaultHeader | null; onUnlock: (dek: CryptoKey) => void; onErase: () => Promise<void> }) { const navigate = useNavigate(); const { t } = useTranslation(); const [passphrase, setPassphrase] = useState(''); const [failed, setFailed] = useState(false); return <main className="public-page"><p className="eyebrow">{t('appName')}</p><h1>{t('unlockTitle')}</h1><p>{t('unlockBody')}</p><form onSubmit={(event) => { event.preventDefault(); if (!header) { navigate('/binder/setup'); return; } void unlockVault(passphrase, header).then((dek) => { setFailed(false); onUnlock(dek); navigate('/binder/overview'); }).catch(() => setFailed(true)); }}><label>{t('passphrase')}<input type="password" autoComplete="current-password" value={passphrase} onChange={(event) => setPassphrase(event.target.value)} /></label>{failed && <p role="alert">{t('invalidPassphrase')}</p>}<button className="button button-primary">{t('unlock')}</button></form><button className="quiet-link" onClick={() => navigate('/binder/backup-restore')}>{t('restoreBackup')}</button><button className="quiet-link" onClick={() => { if (window.confirm(t('eraseConfirm'))) void onErase(); }}>{t('eraseBinder')}</button></main>; }
-function Shell({ onLock }: { onLock: () => void }) { const location = useLocation(); const { t } = useTranslation(); const titleKey = navigation.find(([, path]) => location.pathname.endsWith(path))?.[0] ?? 'overview'; return <div className="app-layout"><a className="skip-link" href="#main-content">{t('skipToContent')}</a><aside className="sidebar"><Link className="wordmark" to="/binder/overview"><span>{t('appName')}</span><small>{t('localFirst')}</small></Link><LanguageSelector /><p className="security-indicator">{t('unlockedOnDevice')}</p><nav aria-label={t('binder', { ns: 'navigation' })}>{navigation.map(([key, path]) => <Link aria-current={location.pathname.endsWith(path) ? 'page' : undefined} className={location.pathname.endsWith(path) ? 'active' : ''} key={path} to={`/binder/${path}`}>{t(key, { ns: 'navigation' })}</Link>)}</nav></aside><section className="content-region"><header className="utility-bar"><h1>{t(titleKey, { ns: 'navigation' })}</h1><span className="save-state">{t('savedLocally')}</span><button className="lock-button" onClick={onLock}>{t('lock')}</button></header><main id="main-content" className="page-content"><Outlet /></main></section></div>; }
-function ProtectedPage() { const location = useLocation(); const { t } = useTranslation(); const key = navigation.find(([, path]) => location.pathname.endsWith(path))?.[0] ?? 'overview'; return <section><p className="eyebrow">{t('appName')}</p><h2>{t(key, { ns: 'navigation' })}</h2><p>{t('protectedBody')}</p></section>; }
-function AutoLockSettings() { const { t } = useTranslation(); const [minutes, setMinutes] = useState(() => Number(window.localStorage.getItem('continuity-binder-auto-lock') ?? 15)); const [copied, setCopied] = useState(false); return <section><p className="eyebrow">{t('appName')}</p><h2>{t('autoLock')}</h2><p>{t('autoLockHelp')}</p><label>{t('autoLock')}<select value={minutes} onChange={(event) => { const next = Number(event.target.value); setMinutes(next); window.localStorage.setItem('continuity-binder-auto-lock', String(next)); }}><option value="5">5 {t('minutes')}</option><option value="15">15 {t('minutes')}</option><option value="30">30 {t('minutes')}</option><option value="60">60 {t('minutes')}</option></select></label><button type="button" onClick={() => { void navigator.clipboard?.writeText(buildDiagnosticInfo()).then(() => setCopied(true)); }}>Copy diagnostic info</button>{copied && <p role="status">Diagnostic info copied. It contains no binder values.</p>}</section>; }
+function PublicPage({
+  titleKey,
+}: {
+  titleKey: 'privacy' | 'security' | 'terms' | 'notFound';
+}) {
+  const { t } = useTranslation(['common', 'public']);
+  const contentKey =
+    titleKey === 'privacy'
+      ? 'privacy'
+      : titleKey === 'security'
+        ? 'security'
+        : titleKey === 'terms'
+          ? 'terms'
+          : '';
+  const paragraphs = contentKey
+    ? (t(`${contentKey}Body`, {
+        ns: 'public',
+        returnObjects: true,
+      }) as string[])
+    : [t('tagline')];
+  return (
+    <main className="public-page">
+      <Link to="/">{t('backToApp')}</Link>
+      <h1>
+        {contentKey ? t(`${contentKey}Title`, { ns: 'public' }) : t(titleKey)}
+      </h1>
+      {paragraphs.map((paragraph) => (
+        <p key={paragraph}>{paragraph}</p>
+      ))}
+    </main>
+  );
+}
+function Landing() {
+  const { t } = useTranslation(['common', 'landing']);
+  return (
+    <>
+      <header className="site-header">
+        <Link className="wordmark" to="/">
+          <span>{t('appName')}</span>
+          <small>{t('localFirst')}</small>
+        </Link>
+        <LanguageSelector />
+        <nav aria-label={t('primary', { ns: 'navigation' })}>
+          <a href="#privacy">{t('privacy')}</a>
+          <a href="#how-it-works">{t('howItWorks')}</a>
+          <Link to="/help">{t('title', { ns: 'help' })}</Link>
+        </nav>
+      </header>
+      <main>
+        <section className="hero">
+          <p className="eyebrow">{t('eyebrow', { ns: 'landing' })}</p>
+          <h1>{t('headline', { ns: 'landing' })}</h1>
+          <p className="hero-copy">{t('description', { ns: 'landing' })}</p>
+          <p className="trust-statement">{t('trust', { ns: 'landing' })}</p>
+          <Link className="button button-primary" to="/binder/setup">
+            {t('cta', { ns: 'landing' })}
+          </Link>
+          <p className="free-note">{t('freeNote', { ns: 'landing' })}</p>
+          <p className="quiet-note">{t('quietNote', { ns: 'landing' })}</p>
+        </section>
+        <section className="trust-strip" id="privacy" aria-label={t('privacy')}>
+          <article>
+            <h2>{t('localTitle', { ns: 'landing' })}</h2>
+            <p>{t('localBody', { ns: 'landing' })}</p>
+          </article>
+          <article>
+            <h2>{t('encryptedTitle', { ns: 'landing' })}</h2>
+            <p>{t('encryptedBody', { ns: 'landing' })}</p>
+          </article>
+          <article>
+            <h2>{t('noTrackingTitle', { ns: 'landing' })}</h2>
+            <p>{t('noTrackingBody', { ns: 'landing' })}</p>
+          </article>
+        </section>
+        <section className="how-it-works" id="how-it-works">
+          <h2>{t('howTitle', { ns: 'landing' })}</h2>
+          <div className="steps">
+            <article>
+              <h3>{t('stepOneTitle', { ns: 'landing' })}</h3>
+              <p>{t('stepOneBody', { ns: 'landing' })}</p>
+            </article>
+            <article>
+              <h3>{t('stepTwoTitle', { ns: 'landing' })}</h3>
+              <p>{t('stepTwoBody', { ns: 'landing' })}</p>
+            </article>
+            <article>
+              <h3>{t('stepThreeTitle', { ns: 'landing' })}</h3>
+              <p>{t('stepThreeBody', { ns: 'landing' })}</p>
+            </article>
+          </div>
+        </section>
+        <section className="security-clarification">
+          <h2>{t('clarificationTitle', { ns: 'landing' })}</h2>
+          <p>{t('clarificationBody', { ns: 'landing' })}</p>
+        </section>
+      </main>
+    </>
+  );
+}
+function Setup({
+  onCreated,
+}: {
+  onCreated: (header: VaultHeader, dek: CryptoKey) => void;
+}) {
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+  const [passphrase, setPassphrase] = useState('');
+  const [confirmation, setConfirmation] = useState('');
+  const [acknowledged, setAcknowledged] = useState(false);
+  const valid =
+    passphrase.length >= 12 && passphrase === confirmation && acknowledged;
+  return (
+    <main className="public-page">
+      <p className="eyebrow">{t('appName')}</p>
+      <h1>{t('setupTitle')}</h1>
+      <p>{t('setupBody')}</p>
+      <p>{t('noRecovery')}</p>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          void createVault(passphrase).then(({ header, dek }) => {
+            onCreated(header, dek);
+            navigate('/binder/overview');
+          });
+        }}
+      >
+        <label>
+          {t('passphrase')}
+          <input
+            type="password"
+            autoComplete="new-password"
+            value={passphrase}
+            onChange={(event) => setPassphrase(event.target.value)}
+          />
+        </label>
+        <label>
+          {t('confirmPassphrase')}
+          <input
+            type="password"
+            autoComplete="new-password"
+            value={confirmation}
+            onChange={(event) => setConfirmation(event.target.value)}
+          />
+        </label>
+        <p>{t('passphraseRequirements')}</p>
+        <label>
+          <input
+            type="checkbox"
+            checked={acknowledged}
+            onChange={(event) => setAcknowledged(event.target.checked)}
+          />{' '}
+          {t('passphraseAcknowledgment')}
+        </label>
+        <button className="button button-primary" disabled={!valid}>
+          {t('createBinder')}
+        </button>
+      </form>
+    </main>
+  );
+}
+function Unlock({
+  header,
+  onUnlock,
+  onErase,
+}: {
+  header: VaultHeader | null;
+  onUnlock: (dek: CryptoKey) => void;
+  onErase: () => Promise<void>;
+}) {
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+  const [passphrase, setPassphrase] = useState('');
+  const [failed, setFailed] = useState(false);
+  return (
+    <main className="public-page">
+      <p className="eyebrow">{t('appName')}</p>
+      <h1>{t('unlockTitle')}</h1>
+      <p>{t('unlockBody')}</p>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (!header) {
+            navigate('/binder/setup');
+            return;
+          }
+          void unlockVault(passphrase, header)
+            .then((dek) => {
+              setFailed(false);
+              onUnlock(dek);
+              navigate('/binder/overview');
+            })
+            .catch(() => setFailed(true));
+        }}
+      >
+        <label>
+          {t('passphrase')}
+          <input
+            type="password"
+            autoComplete="current-password"
+            value={passphrase}
+            onChange={(event) => setPassphrase(event.target.value)}
+          />
+        </label>
+        {failed && <p role="alert">{t('invalidPassphrase')}</p>}
+        <button className="button button-primary">{t('unlock')}</button>
+      </form>
+      <button
+        className="quiet-link"
+        onClick={() => navigate('/binder/backup-restore')}
+      >
+        {t('restoreBackup')}
+      </button>
+      <button
+        className="quiet-link"
+        onClick={() => {
+          if (window.confirm(t('eraseConfirm'))) void onErase();
+        }}
+      >
+        {t('eraseBinder')}
+      </button>
+    </main>
+  );
+}
+function Shell({ onLock }: { onLock: () => void }) {
+  const location = useLocation();
+  const { t } = useTranslation();
+  const titleKey =
+    navigation.find(([, path]) => location.pathname.endsWith(path))?.[0] ??
+    'overview';
+  return (
+    <div className="app-layout">
+      <a className="skip-link" href="#main-content">
+        {t('skipToContent')}
+      </a>
+      <aside className="sidebar">
+        <Link className="wordmark" to="/binder/overview">
+          <span>{t('appName')}</span>
+          <small>{t('localFirst')}</small>
+        </Link>
+        <LanguageSelector />
+        <p className="security-indicator">{t('unlockedOnDevice')}</p>
+        <nav aria-label={t('binder', { ns: 'navigation' })}>
+          {navigation.map(([key, path]) => (
+            <Link
+              aria-current={
+                location.pathname.endsWith(path) ? 'page' : undefined
+              }
+              className={location.pathname.endsWith(path) ? 'active' : ''}
+              key={path}
+              to={`/binder/${path}`}
+            >
+              {t(key, { ns: 'navigation' })}
+            </Link>
+          ))}
+        </nav>
+      </aside>
+      <section className="content-region">
+        <header className="utility-bar">
+          <h1>{t(titleKey, { ns: 'navigation' })}</h1>
+          <span className="save-state">{t('savedLocally')}</span>
+          <button className="lock-button" onClick={onLock}>
+            {t('lock')}
+          </button>
+        </header>
+        <main id="main-content" className="page-content">
+          <Outlet />
+        </main>
+      </section>
+    </div>
+  );
+}
+function ProtectedPage() {
+  const location = useLocation();
+  const { t } = useTranslation();
+  const key =
+    navigation.find(([, path]) => location.pathname.endsWith(path))?.[0] ??
+    'overview';
+  return (
+    <section>
+      <p className="eyebrow">{t('appName')}</p>
+      <h2>{t(key, { ns: 'navigation' })}</h2>
+      <p>{t('protectedBody')}</p>
+    </section>
+  );
+}
+function AutoLockSettings() {
+  const { t } = useTranslation();
+  const [minutes, setMinutes] = useState(() =>
+    Number(window.localStorage.getItem('continuity-binder-auto-lock') ?? 15),
+  );
+  const [copied, setCopied] = useState(false);
+  return (
+    <section>
+      <p className="eyebrow">{t('appName')}</p>
+      <h2>{t('autoLock')}</h2>
+      <p>{t('autoLockHelp')}</p>
+      <label>
+        {t('autoLock')}
+        <select
+          value={minutes}
+          onChange={(event) => {
+            const next = Number(event.target.value);
+            setMinutes(next);
+            window.localStorage.setItem(
+              'continuity-binder-auto-lock',
+              String(next),
+            );
+          }}
+        >
+          <option value="5">5 {t('minutes')}</option>
+          <option value="15">15 {t('minutes')}</option>
+          <option value="30">30 {t('minutes')}</option>
+          <option value="60">60 {t('minutes')}</option>
+        </select>
+      </label>
+      <button
+        type="button"
+        onClick={() => {
+          void navigator.clipboard
+            ?.writeText(buildDiagnosticInfo())
+            .then(() => setCopied(true));
+        }}
+      >
+        Copy diagnostic info
+      </button>
+      {copied && (
+        <p role="status">
+          Diagnostic info copied. It contains no binder values.
+        </p>
+      )}
+    </section>
+  );
+}
 
-export function App() { const [dek, setDek] = useState<CryptoKey | null>(null); const [header, setHeader] = useState<VaultHeader | null>(null); const [database] = useState(() => typeof indexedDB === 'undefined' ? null : new ContinuityDatabase()); const [lastActivity, setLastActivity] = useState(() => Date.now()); const autoLockMinutes = Number(window.localStorage.getItem('continuity-binder-auto-lock') ?? 15); useEffect(() => { if (!database) return; void getVaultHeader(database).then(setHeader); }, [database]); useEffect(() => { if (!dek) return; const activity = () => setLastActivity(Date.now()); window.addEventListener('pointerdown', activity); window.addEventListener('keydown', activity); const timer = window.setInterval(() => { if (Date.now() - lastActivity >= autoLockMinutes * 60_000) setDek(null); }, 1000); return () => { window.removeEventListener('pointerdown', activity); window.removeEventListener('keydown', activity); window.clearInterval(timer); }; }, [dek, lastActivity, autoLockMinutes]); const clearVault = async () => { if (database) await eraseVault(database); setDek(null); setHeader(null); }; return <Routes><Route path="/" element={<Landing />} /><Route path="/privacy" element={<PublicPage titleKey="privacy" />} /><Route path="/security" element={<PublicPage titleKey="security" />} /><Route path="/disclaimer" element={<PublicPage titleKey="terms" />} /><Route path="/binder/setup" element={<Setup onCreated={(nextHeader, nextDek) => { setHeader(nextHeader); setDek(nextDek); if (database) void putVaultHeader(database, nextHeader); }} />} /><Route path="/binder/unlock" element={<Unlock header={header} onUnlock={(nextDek) => { setLastActivity(Date.now()); setDek(nextDek); }} onErase={clearVault} />} /><Route path="/binder" element={dek ? <Shell onLock={() => setDek(null)} /> : <Navigate to="/binder/unlock" replace />}><Route index element={<Navigate to="overview" replace />} /><Route path="overview" element={<Dashboard database={database} dek={dek!} />} /><Route path="household-setup" element={<HouseholdSetup database={database} dek={dek!} />} /><Route path="people-contacts" element={<PeopleContacts database={database} dek={dek!} />} /><Route path="start-here" element={<ImmediateResponse mode="start" database={database} dek={dek!} />} /><Route path="first-72-hours" element={<ImmediateResponse mode="first72" database={database} dek={dek!} />} /><Route path="do-not-do-immediately" element={<ImmediateResponse mode="doNot" database={database} dek={dek!} />} /><Route path="people-to-notify" element={<ImmediateResponse mode="notify" database={database} dek={dek!} />} />{navigation.filter(([, path]) => !['overview', 'household-setup', 'people-contacts', 'start-here', 'first-72-hours', 'do-not-do-immediately', 'people-to-notify'].includes(path)).map(([, path]) => <Route key={path} path={path} element={path === 'settings/security' ? <AutoLockSettings /> : path === 'backup-restore' ? <EncryptedBackup database={database} /> : path === 'legal-estate' ? <LegalEstate database={database} dek={dek!} /> : path === 'money-benefits' ? <InsuranceBenefits database={database} dek={dek!} /> : path === 'banking-investments' ? <FinanceAccounts database={database} dek={dek!} /> : path === 'debts-obligations' ? <DebtsObligations database={database} dek={dek!} /> : path === 'property' ? <PropertyAssets database={database} dek={dek!} /> : path === 'business-employment' ? <BusinessEmployment database={database} dek={dek!} /> : path === 'digital-access' ? <DigitalAccess database={database} dek={dek!} /> : path === 'family-continuity' ? <FamilyCare database={database} dek={dek!} /> : path === 'tax-records' ? <TaxRecords database={database} dek={dek!} /> : path === 'wishes-legacy' ? <WishesLegacy database={database} dek={dek!} /> : path === 'review' ? <CompletenessReview database={database} dek={dek!} /> : path === 'preview' ? <BinderPreview /> : path === 'export' ? <ReadableArchiveExport /> : <ProtectedPage />} />)}</Route><Route path="*" element={<PublicPage titleKey="notFound" />} /></Routes>; }
+export function App() {
+  const [dek, setDek] = useState<CryptoKey | null>(null);
+  const [header, setHeader] = useState<VaultHeader | null>(null);
+  const [database] = useState(() =>
+    typeof indexedDB === 'undefined' ? null : new ContinuityDatabase(),
+  );
+  const [lastActivity, setLastActivity] = useState(() => Date.now());
+  const autoLockMinutes = Number(
+    window.localStorage.getItem('continuity-binder-auto-lock') ?? 15,
+  );
+  useEffect(() => {
+    if (!database) return;
+    void getVaultHeader(database).then(setHeader);
+  }, [database]);
+  useEffect(() => {
+    if (!dek) return;
+    const activity = () => setLastActivity(Date.now());
+    window.addEventListener('pointerdown', activity);
+    window.addEventListener('keydown', activity);
+    const timer = window.setInterval(() => {
+      if (Date.now() - lastActivity >= autoLockMinutes * 60_000) setDek(null);
+    }, 1000);
+    return () => {
+      window.removeEventListener('pointerdown', activity);
+      window.removeEventListener('keydown', activity);
+      window.clearInterval(timer);
+    };
+  }, [dek, lastActivity, autoLockMinutes]);
+  const clearVault = async () => {
+    if (database) await eraseVault(database);
+    setDek(null);
+    setHeader(null);
+  };
+  return (
+    <Routes>
+      <Route path="/" element={<Landing />} />
+      <Route path="/privacy" element={<PublicPage titleKey="privacy" />} />
+      <Route path="/security" element={<PublicPage titleKey="security" />} />
+      <Route path="/disclaimer" element={<PublicPage titleKey="terms" />} />
+      <Route path="/help" element={<Help />} />
+      <Route
+        path="/binder/setup"
+        element={
+          <Setup
+            onCreated={(nextHeader, nextDek) => {
+              setHeader(nextHeader);
+              setDek(nextDek);
+              if (database) void putVaultHeader(database, nextHeader);
+            }}
+          />
+        }
+      />
+      <Route
+        path="/binder/unlock"
+        element={
+          <Unlock
+            header={header}
+            onUnlock={(nextDek) => {
+              setLastActivity(Date.now());
+              setDek(nextDek);
+            }}
+            onErase={clearVault}
+          />
+        }
+      />
+      <Route
+        path="/binder"
+        element={
+          dek ? (
+            <Shell onLock={() => setDek(null)} />
+          ) : (
+            <Navigate to="/binder/unlock" replace />
+          )
+        }
+      >
+        <Route index element={<Navigate to="overview" replace />} />
+        <Route
+          path="overview"
+          element={<Dashboard database={database} dek={dek!} />}
+        />
+        <Route
+          path="household-setup"
+          element={<HouseholdSetup database={database} dek={dek!} />}
+        />
+        <Route
+          path="people-contacts"
+          element={<PeopleContacts database={database} dek={dek!} />}
+        />
+        <Route
+          path="start-here"
+          element={
+            <ImmediateResponse mode="start" database={database} dek={dek!} />
+          }
+        />
+        <Route
+          path="first-72-hours"
+          element={
+            <ImmediateResponse mode="first72" database={database} dek={dek!} />
+          }
+        />
+        <Route
+          path="do-not-do-immediately"
+          element={
+            <ImmediateResponse mode="doNot" database={database} dek={dek!} />
+          }
+        />
+        <Route
+          path="people-to-notify"
+          element={
+            <ImmediateResponse mode="notify" database={database} dek={dek!} />
+          }
+        />
+        {navigation
+          .filter(
+            ([, path]) =>
+              ![
+                'overview',
+                'household-setup',
+                'people-contacts',
+                'start-here',
+                'first-72-hours',
+                'do-not-do-immediately',
+                'people-to-notify',
+              ].includes(path),
+          )
+          .map(([, path]) => (
+            <Route
+              key={path}
+              path={path}
+              element={
+                path === 'settings/security' ? (
+                  <AutoLockSettings />
+                ) : path === 'backup-restore' ? (
+                  <EncryptedBackup database={database} />
+                ) : path === 'legal-estate' ? (
+                  <LegalEstate database={database} dek={dek!} />
+                ) : path === 'money-benefits' ? (
+                  <InsuranceBenefits database={database} dek={dek!} />
+                ) : path === 'banking-investments' ? (
+                  <FinanceAccounts database={database} dek={dek!} />
+                ) : path === 'debts-obligations' ? (
+                  <DebtsObligations database={database} dek={dek!} />
+                ) : path === 'property' ? (
+                  <PropertyAssets database={database} dek={dek!} />
+                ) : path === 'business-employment' ? (
+                  <BusinessEmployment database={database} dek={dek!} />
+                ) : path === 'digital-access' ? (
+                  <DigitalAccess database={database} dek={dek!} />
+                ) : path === 'family-continuity' ? (
+                  <FamilyCare database={database} dek={dek!} />
+                ) : path === 'tax-records' ? (
+                  <TaxRecords database={database} dek={dek!} />
+                ) : path === 'wishes-legacy' ? (
+                  <WishesLegacy database={database} dek={dek!} />
+                ) : path === 'review' ? (
+                  <CompletenessReview database={database} dek={dek!} />
+                ) : path === 'preview' ? (
+                  <BinderPreview />
+                ) : path === 'export' ? (
+                  <ReadableArchiveExport />
+                ) : (
+                  <ProtectedPage />
+                )
+              }
+            />
+          ))}
+      </Route>
+      <Route path="*" element={<PublicPage titleKey="notFound" />} />
+    </Routes>
+  );
+}

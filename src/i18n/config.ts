@@ -40,6 +40,8 @@ import esExport from './locales/es/export.json';
 import esBackup from './locales/es/backup.json';
 import enPublic from './locales/en/public.json';
 import esPublic from './locales/es/public.json';
+import enHelp from './locales/en/help.json';
+import esHelp from './locales/es/help.json';
 
 const storedLocale = window.localStorage.getItem('continuity-binder-locale');
 export const supportedLocales = ['en', 'es'] as const;
@@ -49,8 +51,8 @@ document.documentElement.lang = initialLocale;
 document.documentElement.dir = 'ltr';
 
 export const resources = {
-    en: { common: enCommon, landing: enLanding, navigation: enNavigation, sections: enSections, contacts: enContacts, legal: enLegal, insurance: enInsurance, finance: enFinance, debts: enDebts, property: enProperty, business: enBusiness, digital: enDigital, care: enCare, tax: enTax, wishes: enWishes, review: enReview, rendering: enRendering, export: enExport, backup: enBackup, public: enPublic },
-    es: { common: esCommon, landing: esLanding, navigation: esNavigation, sections: esSections, contacts: esContacts, legal: esLegal, insurance: esInsurance, finance: esFinance, debts: esDebts, property: esProperty, business: esBusiness, digital: esDigital, care: esCare, tax: esTax, wishes: esWishes, review: esReview, rendering: esRendering, export: esExport, backup: esBackup, public: esPublic },
+    en: { common: enCommon, landing: enLanding, navigation: enNavigation, sections: enSections, contacts: enContacts, legal: enLegal, insurance: enInsurance, finance: enFinance, debts: enDebts, property: enProperty, business: enBusiness, digital: enDigital, care: enCare, tax: enTax, wishes: enWishes, review: enReview, rendering: enRendering, export: enExport, backup: enBackup, public: enPublic, help: enHelp },
+    es: { common: esCommon, landing: esLanding, navigation: esNavigation, sections: esSections, contacts: esContacts, legal: esLegal, insurance: esInsurance, finance: esFinance, debts: esDebts, property: esProperty, business: esBusiness, digital: esDigital, care: esCare, tax: esTax, wishes: esWishes, review: esReview, rendering: esRendering, export: esExport, backup: esBackup, public: esPublic, help: esHelp },
 };
 
 void i18n.use(initReactI18next).init({

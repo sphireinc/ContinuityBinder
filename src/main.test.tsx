@@ -44,4 +44,13 @@ describe('application baseline', () => {
     expect(screen.getByText(/Continuity Binder is an organizational tool/i)).toBeInTheDocument();
     expect(screen.getByText(/Verify legal documents and beneficiary designations/i)).toBeInTheDocument();
   });
+
+  it('provides launch help that matches local storage and export behavior', async () => {
+    await i18n.changeLanguage('en');
+    render(<MemoryRouter initialEntries={['/help']}><App /></MemoryRouter>);
+    expect(screen.getByRole('heading', { name: 'Using Continuity Binder' })).toBeInTheDocument();
+    expect(screen.getByText(/no binder-data backend/i)).toBeInTheDocument();
+    expect(screen.getByText(/readable archive and printed binder can be read without your passphrase/i)).toBeInTheDocument();
+    expect(screen.getByText(/does not create or replace legal instruments/i)).toBeInTheDocument();
+  });
 });
