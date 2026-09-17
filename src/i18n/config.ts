@@ -11,6 +11,7 @@ import enFinance from './locales/en/finance.json';
 import enDebts from './locales/en/debts.json';
 import enProperty from './locales/en/property.json';
 import enBusiness from './locales/en/business.json';
+import enDigital from './locales/en/digital.json';
 import esCommon from './locales/es/common.json';
 import esLanding from './locales/es/landing.json';
 import esNavigation from './locales/es/navigation.json';
@@ -22,6 +23,7 @@ import esFinance from './locales/es/finance.json';
 import esDebts from './locales/es/debts.json';
 import esProperty from './locales/es/property.json';
 import esBusiness from './locales/es/business.json';
+import esDigital from './locales/es/digital.json';
 
 const storedLocale = window.localStorage.getItem('continuity-binder-locale');
 export const supportedLocales = ['en', 'es'] as const;
@@ -31,8 +33,8 @@ document.documentElement.lang = initialLocale;
 document.documentElement.dir = 'ltr';
 
 export const resources = {
-    en: { common: enCommon, landing: enLanding, navigation: enNavigation, sections: enSections, contacts: enContacts, legal: enLegal, insurance: enInsurance, finance: enFinance, debts: enDebts, property: enProperty, business: enBusiness },
-    es: { common: esCommon, landing: esLanding, navigation: esNavigation, sections: esSections, contacts: esContacts, legal: esLegal, insurance: esInsurance, finance: esFinance, debts: esDebts, property: esProperty, business: esBusiness },
+    en: { common: enCommon, landing: enLanding, navigation: enNavigation, sections: enSections, contacts: enContacts, legal: enLegal, insurance: enInsurance, finance: enFinance, debts: enDebts, property: enProperty, business: enBusiness, digital: enDigital },
+    es: { common: esCommon, landing: esLanding, navigation: esNavigation, sections: esSections, contacts: esContacts, legal: esLegal, insurance: esInsurance, finance: esFinance, debts: esDebts, property: esProperty, business: esBusiness, digital: esDigital },
 };
 
 void i18n.use(initReactI18next).init({
