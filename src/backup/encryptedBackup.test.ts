@@ -12,7 +12,7 @@ describe('encrypted backup', () => {
     const records = await zip.file('encrypted-records.json')!.async('text');
     expect(JSON.parse(records)).toEqual([envelope]);
     expect(records).not.toContain('plaintext secret');
-    await expect(validateEncryptedBackup(blob)).resolves.toMatchObject({ backupFormatVersion: 1 });
+    await expect(validateEncryptedBackup(blob)).resolves.toMatchObject({ backupFormatVersion: 1, minimumSupportedAppVersion: '0.1.0' });
   });
 
   it('rejects a modified encrypted backup', async () => {

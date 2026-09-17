@@ -2,12 +2,13 @@ import JSZip from 'jszip';
 import { z } from 'zod';
 import { getVaultHeader, type ContinuityDatabase, type EncryptedEnvelope, type EncryptedAttachment } from '../data/repositories/encryptedRepository';
 import { unlockVault, type VaultHeader } from '../crypto/vault';
+import { APP_VERSION } from '../constants';
 
 const FORMAT_VERSION = 1;
 const encoder = new TextEncoder();
 const vaultHeaderSchema = z.object({ vaultFormatVersion: z.number(), kdf: z.literal('PBKDF2-HMAC-SHA-256'), iterations: z.number().int().min(310_000), salt: z.string(), wrapIv: z.string(), wrappedDek: z.string(), createdAt: z.string(), updatedAt: z.string() });
 const envelopeSchema = z.object({ id: z.string(), entityType: z.string(), schemaVersion: z.number().int(), iv: z.string(), ciphertext: z.string(), updatedAt: z.string() });
-const manifestSchema = z.object({ backupFormatVersion: z.literal(FORMAT_VERSION), createdAt: z.string(), files: z.record(z.string().regex(/^[a-f0-9]{64}$/)) });
+const manifestSchema = z.object({ backupFormatVersion: z.literal(FORMAT_VERSION), minimumSupportedAppVersion: z.string(), createdAt: z.string(), files: z.record(z.string().regex(/^[a-f0-9]{64}$/)) });
 const files = ['vault-header.json', 'encrypted-records.json', 'encrypted-attachments.json', 'migration-meta.json', 'settings.json'] as const;
 export type BackupSettings = Record<string, string | number | boolean | null>;
 export type BackupManifest = z.infer<typeof manifestSchema>;
@@ -26,7 +27,7 @@ export async function createEncryptedBackup(database: ContinuityDatabase, settin
     'migration-meta.json': json(migrationMeta),
     'settings.json': json(settings),
   };
-  const manifest: BackupManifest = { backupFormatVersion: FORMAT_VERSION, createdAt: new Date().toISOString(), files: {} };
+  const manifest: BackupManifest = { backupFormatVersion: FORMAT_VERSION, minimumSupportedAppVersion: APP_VERSION, createdAt: new Date().toISOString(), files: {} };
   for (const file of files) manifest.files[file] = await digest(contents[file]);
   const zip = new JSZip();
   zip.file('manifest.json', json(manifest));
