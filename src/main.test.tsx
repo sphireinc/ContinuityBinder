@@ -1,20 +1,18 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { APP_NAME, APP_TAGLINE } from './constants';
-
-function BaselineApp() {
-  return (
-    <main>
-      <h1>{APP_NAME}</h1>
-      <p>{APP_TAGLINE}</p>
-    </main>
-  );
-}
+import { App } from './App';
+import { APP_NAME } from './constants';
 
 describe('application baseline', () => {
   it('renders the canonical product name and tagline', () => {
-    render(<BaselineApp />);
-    expect(screen.getByRole('heading', { name: APP_NAME })).toBeInTheDocument();
-    expect(screen.getByText(APP_TAGLINE)).toBeInTheDocument();
+    render(<App />);
+    expect(screen.getByRole('link', { name: APP_NAME })).toBeInTheDocument();
+    expect(screen.getByText('Free as in beer. No account. No subscription. No catch.')).toBeInTheDocument();
+  });
+
+  it('states the local-first privacy boundary', () => {
+    render(<App />);
+    expect(screen.getByText(/encrypted on this device and is not sent to us/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Local-first does not mean magic.' })).toBeInTheDocument();
   });
 });
