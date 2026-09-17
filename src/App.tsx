@@ -1,47 +1,23 @@
+import { useState } from 'react';
+import { Link, Navigate, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { APP_NAME, APP_TAGLINE } from './constants';
 
-const primaryCta = 'Fill Your Post-Death Family Continuity Binder';
+const navigation = [
+  ['Overview', 'overview'], ['Household Setup', 'household-setup'], ['People & Contacts', 'people-contacts'],
+  ['Legal & Estate', 'legal-estate'], ['Money & Benefits', 'money-benefits'], ['Property & Ownership', 'property'],
+  ['Digital Access', 'digital-access'], ['Family Continuity', 'family-continuity'], ['Tax & Records', 'tax-records'],
+  ['Wishes & Legacy', 'wishes-legacy'], ['Completeness Review', 'review'], ['Binder Preview', 'preview'],
+  ['Export Archive', 'export'], ['Backup & Restore', 'backup-restore'], ['Settings', 'settings/security'],
+] as const;
+
+function PublicPage({ title }: { title: string }) { return <main className="public-page"><Link to="/">← {APP_NAME}</Link><h1>{title}</h1><p>{APP_TAGLINE}</p></main>; }
+function Landing() { return <><header className="site-header"><Link className="wordmark" to="/"><span>{APP_NAME}</span><small>Local-first</small></Link><nav aria-label="Primary navigation"><a href="#privacy">Privacy</a><a href="#how-it-works">How it works</a></nav></header><main><section className="hero"><p className="eyebrow">A private family continuity record</p><h1>Prepare the information your family will need when you cannot provide it.</h1><p className="hero-copy">Continuity Binder guides you through the people, accounts, documents, obligations, property, wishes, and instructions a surviving spouse, partner, executor, or trusted family member may need after a death.</p><p className="trust-statement">Your binder is created in your browser. What you enter is encrypted on this device and is not sent to us.</p><Link className="button button-primary" to="/binder/setup">Fill Your Post-Death Family Continuity Binder</Link><p className="free-note">Free as in beer. No account. No subscription. No catch.</p><p className="quiet-note">You can print the finished binder, save it as a PDF, export human-readable files, or create an encrypted backup.</p></section><section className="trust-strip" id="privacy" aria-label="Privacy commitments"><article><h2>Local by design</h2><p>Binder data stays in this browser unless you explicitly export it.</p></article><article><h2>Encrypted at rest</h2><p>Saved binder records are encrypted before they are written to local browser storage.</p></article><article><h2>No tracking</h2><p>No analytics, advertising pixels, session replay, or third-party trackers.</p></article></section><section className="how-it-works" id="how-it-works"><h2>How it works</h2><div className="steps"><article><h3>Enter the facts once</h3><p>People, addresses, phone numbers, accounts, and contacts become reusable records.</p></article><article><h3>Build the binder</h3><p>Complete each section at your own pace. Your progress is saved locally.</p></article><article><h3>Take it with you</h3><p>Print it, save a PDF, export readable files, or create an encrypted backup.</p></article></div></section><section className="security-clarification"><h2>Local-first does not mean magic.</h2><p>The application itself is downloaded from this website. The information you enter into your binder is not transmitted by the application. As with any browser-based software, a compromised device, browser, extension, or unlocked session can expose information. Keep your device secure and store exported or printed copies carefully.</p></section></main></>; }
+function Setup() { const navigate = useNavigate(); return <main className="public-page"><p className="eyebrow">{APP_NAME}</p><h1>Set up your binder</h1><p>Create an encrypted local binder on this device.</p><button className="button button-primary" onClick={() => navigate('/binder/unlock')}>Continue to unlock</button></main>; }
+function Unlock({ onUnlock }: { onUnlock: () => void }) { const navigate = useNavigate(); return <main className="public-page"><p className="eyebrow">{APP_NAME}</p><h1>Unlock your binder</h1><p>Your binder unlocks only in this browser session.</p><button className="button button-primary" onClick={() => { onUnlock(); navigate('/binder/overview'); }}>Unlock binder</button></main>; }
+function Shell({ onLock }: { onLock: () => void }) { const location = useLocation(); const title = navigation.find(([, path]) => location.pathname.endsWith(path))?.[0] ?? 'Overview'; return <div className="app-layout"><a className="skip-link" href="#main-content">Skip to content</a><aside className="sidebar"><Link className="wordmark" to="/binder/overview"><span>{APP_NAME}</span><small>Local-first</small></Link><p className="security-indicator">Unlocked on this device</p><nav aria-label="Binder navigation">{navigation.map(([label, path]) => <Link className={location.pathname.endsWith(path) ? 'active' : ''} key={path} to={`/binder/${path}`}>{label}</Link>)}</nav></aside><section className="content-region"><header className="utility-bar"><h1>{title}</h1><span className="save-state">Saved locally</span><button className="lock-button" onClick={onLock}>Lock</button></header><main id="main-content" className="page-content"><Outlet /></main></section></div>; }
+function ProtectedPage() { const location = useLocation(); return <section><p className="eyebrow">{APP_NAME}</p><h2>{location.pathname.split('/').pop()?.replaceAll('-', ' ')}</h2><p>This protected workspace is available while the binder is unlocked.</p></section>; }
 
 export function App() {
-  return (
-    <div className="site-shell">
-      <header className="site-header">
-        <a className="wordmark" href="/" aria-label={APP_NAME}><span>{APP_NAME}</span><small>Local-first</small></a>
-        <nav aria-label="Primary navigation"><a href="#privacy">Privacy</a><a href="#how-it-works">How it works</a></nav>
-      </header>
-      <main>
-        <section className="hero" aria-labelledby="hero-title">
-          <p className="eyebrow">A private family continuity record</p>
-          <h1 id="hero-title">Prepare the information your family will need when you cannot provide it.</h1>
-          <p className="hero-copy">Continuity Binder guides you through the people, accounts, documents, obligations, property, wishes, and instructions a surviving spouse, partner, executor, or trusted family member may need after a death.</p>
-          <p className="trust-statement">Your binder is created in your browser. What you enter is encrypted on this device and is not sent to us.</p>
-          <a className="button button-primary" href="/binder">{primaryCta}</a>
-          <p className="free-note">Free as in beer. No account. No subscription. No catch.</p>
-          <p className="quiet-note">You can print the finished binder, save it as a PDF, export human-readable files, or create an encrypted backup.</p>
-        </section>
-        <section className="trust-strip" id="privacy" aria-label="Privacy commitments">
-          <article><h2>Local by design</h2><p>Binder data stays in this browser unless you explicitly export it.</p></article>
-          <article><h2>Encrypted at rest</h2><p>Saved binder records are encrypted before they are written to local browser storage.</p></article>
-          <article><h2>No tracking</h2><p>No analytics, advertising pixels, session replay, or third-party trackers.</p></article>
-        </section>
-        <section className="how-it-works" id="how-it-works" aria-labelledby="how-title">
-          <p className="eyebrow">A durable record, built carefully</p><h2 id="how-title">How it works</h2>
-          <div className="steps">
-            <article><span>01</span><h3>Enter the facts once</h3><p>People, addresses, phone numbers, accounts, and contacts become reusable records.</p></article>
-            <article><span>02</span><h3>Build the binder</h3><p>Complete each section at your own pace. Your progress is saved locally.</p></article>
-            <article><span>03</span><h3>Take it with you</h3><p>Print it, save a PDF, export readable files, or create an encrypted backup.</p></article>
-          </div>
-        </section>
-        <section className="security-clarification" aria-labelledby="clarification-title">
-          <h2 id="clarification-title">Local-first does not mean magic.</h2>
-          <p>The application itself is downloaded from this website. The information you enter into your binder is not transmitted by the application. As with any browser-based software, a compromised device, browser, extension, or unlocked session can expose information. Keep your device secure and store exported or printed copies carefully.</p>
-        </section>
-      </main>
-      <footer className="site-footer">
-        <div><strong>{APP_NAME}</strong><p>Free software for household continuity.</p></div>
-        <nav aria-label="Footer navigation"><a href="#privacy">Privacy</a><a href="#privacy">Security</a><a href="#privacy">Terms / Disclaimer</a><a href="#privacy">Source Code</a></nav>
-        <small>{APP_TAGLINE}</small>
-      </footer>
-    </div>
-  );
+  const [unlocked, setUnlocked] = useState(false);
+  return <Routes><Route path="/" element={<Landing />} /><Route path="/privacy" element={<PublicPage title="Privacy" />} /><Route path="/security" element={<PublicPage title="Security" />} /><Route path="/disclaimer" element={<PublicPage title="Terms and disclaimer" />} /><Route path="/binder/setup" element={<Setup />} /><Route path="/binder/unlock" element={<Unlock onUnlock={() => setUnlocked(true)} />} /><Route path="/binder" element={unlocked ? <Shell onLock={() => setUnlocked(false)} /> : <Navigate to="/binder/unlock" replace />}><Route index element={<Navigate to="overview" replace />} />{navigation.map(([, path]) => <Route key={path} path={path} element={<ProtectedPage />} />)}</Route><Route path="*" element={<PublicPage title="Page not found" />} /></Routes>;
 }

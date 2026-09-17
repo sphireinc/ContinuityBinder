@@ -17,6 +17,23 @@ body { margin: 0; min-width: 320px; }
 a { color: var(--link); }
 a:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
 .site-shell { min-height: 100vh; }
+.public-page { max-width: 820px; margin: 0 auto; padding: 96px 24px; }
+.public-page h1 { margin-top: 24px; }
+.app-layout { min-height: 100vh; display: grid; grid-template-columns: 288px 1fr; }
+.sidebar { background: #171c22; color: white; padding: 32px 20px; overflow-y: auto; }
+.sidebar .wordmark { color: white; margin-bottom: 24px; }
+.security-indicator { color: #cbd4ce; font-size: 13px; }
+.sidebar nav { display: grid; gap: 4px; margin-top: 32px; }
+.sidebar nav a { color: #d8dedb; padding: 10px 12px; border-left: 3px solid transparent; text-decoration: none; }
+.sidebar nav a.active, .sidebar nav a:hover { background: #2d3631; border-left-color: #91b099; color: white; }
+.content-region { min-width: 0; background: #f4f3ef; }
+.utility-bar { min-height: 64px; display: flex; align-items: center; gap: 20px; padding: 0 40px; background: white; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1; }
+.utility-bar h1 { margin: 0; font-size: 20px; flex: 1; }
+.save-state { color: var(--muted); font-size: 14px; }
+.lock-button { min-height: 40px; padding: 0 16px; border: 1px solid var(--border); border-radius: 6px; background: white; color: var(--sidebar); cursor: pointer; }
+.page-content { max-width: 960px; padding: 32px 40px 64px; }
+.skip-link { position: fixed; left: 16px; top: -60px; z-index: 3; padding: 12px; background: white; }
+.skip-link:focus { top: 16px; }
 .site-header, main, .site-footer { width: min(1180px, calc(100% - 48px)); margin: 0 auto; }
 .site-header { height: 72px; display: flex; align-items: center; justify-content: space-between; }
 .wordmark { color: var(--sidebar); text-decoration: none; display: inline-flex; flex-direction: column; gap: 2px; font-weight: 700; }
@@ -51,6 +68,11 @@ p { line-height: 1.5; }
 @media (max-width: 700px) {
   .site-header, main, .site-footer { width: min(100% - 32px, 1180px); }
   .site-header { height: 64px; }
+  .app-layout { display: block; }
+  .sidebar { min-height: auto; }
+  .sidebar nav { grid-template-columns: 1fr 1fr; }
+  .utility-bar { padding: 0 20px; }
+  .page-content { padding: 20px 16px 48px; }
   .hero { padding: 64px 0; }
   .trust-strip, .steps, .site-footer { grid-template-columns: 1fr; }
   .trust-strip article, .trust-strip article + article { padding: 24px 0; border-left: 0; }

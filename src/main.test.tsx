@@ -1,18 +1,18 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { App } from './App';
-import { APP_NAME } from './constants';
+import { MemoryRouter } from 'react-router-dom';
 
 describe('application baseline', () => {
   it('renders the canonical product name and tagline', () => {
-    render(<App />);
-    expect(screen.getByRole('link', { name: APP_NAME })).toBeInTheDocument();
+    render(<MemoryRouter><App /></MemoryRouter>);
+    expect(screen.getByRole('heading', { name: /prepare the information your family will need/i })).toBeInTheDocument();
     expect(screen.getByText('Free as in beer. No account. No subscription. No catch.')).toBeInTheDocument();
   });
 
   it('states the local-first privacy boundary', () => {
-    render(<App />);
-    expect(screen.getByText(/encrypted on this device and is not sent to us/i)).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Local-first does not mean magic.' })).toBeInTheDocument();
+    render(<MemoryRouter initialEntries={['/binder/overview']}><App /></MemoryRouter>);
+    expect(screen.getByRole('heading', { name: 'Unlock your binder' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Unlock binder' })).toBeInTheDocument();
   });
 });
