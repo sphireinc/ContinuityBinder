@@ -46,6 +46,7 @@ import { buildDiagnosticInfo } from './diagnostics';
 import { Help } from './features/help/Help';
 import { FirstRunEducation } from './features/education/FirstRunEducation';
 import { migrateAfterUnlock } from './data/migrations';
+import { IncapacityContinuityPlan } from './features/v2/IncapacityContinuityPlan';
 
 const navigation = [
   ['overview', 'overview'],
@@ -54,6 +55,7 @@ const navigation = [
   ['first72Hours', 'first-72-hours'],
   ['doNotDoImmediately', 'do-not-do-immediately'],
   ['peopleToNotify', 'people-to-notify'],
+  ['incapacityContinuityPlan', 'immediate/incapacity'],
   ['peopleContacts', 'people-contacts'],
   ['legalEstate', 'legal-estate'],
   ['moneyBenefits', 'money-benefits'],
@@ -703,6 +705,8 @@ export function App() {
                   />
                 ) : path === 'backup-restore' ? (
                   <EncryptedBackup database={database} />
+                ) : path === 'immediate/incapacity' ? (
+                  <IncapacityContinuityPlan database={database} dek={dek!} />
                 ) : path === 'legal-estate' ? (
                   <LegalEstate database={database} dek={dek!} />
                 ) : path === 'money-benefits' ? (

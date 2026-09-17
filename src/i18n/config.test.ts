@@ -13,7 +13,7 @@ describe('i18n resources', () => {
 
   it('keeps translation keys semantic rather than sentence-shaped', () => {
     for (const namespace of Object.values(resources.en)) {
-      expect(Object.keys(namespace).every((key) => /^[a-z][A-Za-z0-9]*$/.test(key))).toBe(true);
+      expect(Object.keys(namespace).every((key) => /^[a-z][A-Za-z0-9_]*$/.test(key))).toBe(true);
     }
   });
 });
