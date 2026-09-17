@@ -48,3 +48,41 @@ test('sets up a household, locks, and unlocks the binder', async ({ page }) => {
     request.onerror = () => resolve(true);
   }))).toBe(true);
 });
+
+test('supports keyboard-only setup and lock/unlock controls', async ({ page }) => {
+  await page.goto('/binder/setup');
+  for (let step = 0; step < 2; step += 1) {
+    const continueButton = page.getByRole('button', { name: 'Continue' });
+    await continueButton.focus();
+    await page.keyboard.press('Enter');
+  }
+  const beginButton = page.getByRole('button', { name: 'Begin binder setup' });
+  await beginButton.focus();
+  await page.keyboard.press('Enter');
+
+  const passphrase = page.getByRole('textbox', { name: 'Passphrase', exact: true });
+  const confirmation = page.getByRole('textbox', { name: 'Confirm passphrase' });
+  await passphrase.focus();
+  await page.keyboard.type('a deliberately long passphrase');
+  await confirmation.focus();
+  await page.keyboard.type('a deliberately long passphrase');
+  const acknowledgment = page.getByRole('checkbox', { name: 'I understand that Continuity Binder cannot recover this passphrase.' });
+  await acknowledgment.focus();
+  await page.keyboard.press('Space');
+  const createButton = page.getByRole('button', { name: 'Create encrypted binder' });
+  await createButton.focus();
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/\/binder\/overview$/);
+
+  const lockButton = page.getByRole('button', { name: 'Lock' });
+  await lockButton.focus();
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/\/binder\/unlock$/);
+  const unlockPassphrase = page.getByRole('textbox', { name: 'Passphrase', exact: true });
+  await unlockPassphrase.focus();
+  await page.keyboard.type('a deliberately long passphrase');
+  const unlockButton = page.getByRole('button', { name: 'Unlock binder' });
+  await unlockButton.focus();
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/\/binder\/overview$/);
+});
