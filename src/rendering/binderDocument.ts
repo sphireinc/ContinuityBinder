@@ -36,6 +36,7 @@ export const DEFAULT_BINDER_ORDER = [
   'cover',
   'notice',
   'start',
+  'incapacity',
   'first72',
   'doNot',
   'notify',

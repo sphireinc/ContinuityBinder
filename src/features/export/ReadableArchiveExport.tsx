@@ -9,6 +9,7 @@ import {
 import { benefitRecordSchema } from '../insurance/InsuranceBenefits';
 import { personSchema } from '../household/HouseholdSetup';
 import { personalLetterSchema } from '../wishes/WishesLegacy';
+import { incapacityPlanSchema } from '../v2/IncapacityContinuityPlan';
 
 export function ReadableArchiveExport({
   database,
@@ -26,6 +27,7 @@ export function ReadableArchiveExport({
   >('omit');
   const [insuranceContent, setInsuranceContent] = useState<string[]>([]);
   const [letterContent, setLetterContent] = useState<string[]>([]);
+  const [incapacityContent, setIncapacityContent] = useState<string[]>([]);
   useEffect(() => {
     if (!database) return;
     void Promise.all([
@@ -42,7 +44,8 @@ export function ReadableArchiveExport({
         'PersonalLetter',
         personalLetterSchema,
       ).list(),
-    ]).then(([benefits, people, letters]) => {
+      createEncryptedRepository(database, dek, 'IncapacityContinuityPlan', incapacityPlanSchema).list(),
+    ]).then(([benefits, people, letters, plans]) => {
       const names = new Map(
         people.map((person) => [
           person.id,
@@ -64,6 +67,12 @@ export function ReadableArchiveExport({
               : `${letter.title}: ${letter.body}`,
           ),
       );
+      setIncapacityContent(plans.filter((plan) => plan.includeInReadableExport).flatMap((plan) => [
+        `${names.get(plan.personId) ?? 'Unassigned person'} — ${plan.condition}`,
+        `Financial agent: ${plan.financialAgent || 'Not recorded'} | Healthcare agent: ${plan.healthcareAgent || 'Not recorded'}`,
+        `Instructions: ${plan.instructions || 'Not recorded'}`,
+        '- [ ] Authority confirmed   - [ ] Contacts reached   - [ ] Critical bills reviewed   - [ ] Care plan activated',
+      ]));
     });
   }, [database, dek]);
   const exportArchive = async () => {
@@ -72,6 +81,7 @@ export function ReadableArchiveExport({
         'cover',
         'notice',
         'start',
+        'incapacity',
         'first72',
         'doNot',
         'notify',
@@ -110,7 +120,7 @@ export function ReadableArchiveExport({
           digital: true,
         },
         {},
-        { insurance: insuranceContent, letters: letterContent },
+        { insurance: insuranceContent, letters: letterContent, incapacity: incapacityContent },
       ),
       i18n.language,
       household,

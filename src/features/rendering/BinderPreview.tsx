@@ -10,7 +10,8 @@ import {
   type ContinuityDatabase,
 } from '../../data/repositories/encryptedRepository';
 import { personalLetterSchema } from '../wishes/WishesLegacy';
-import { householdSchema } from '../household/HouseholdSetup';
+import { householdSchema, personSchema } from '../household/HouseholdSetup';
+import { incapacityPlanSchema } from '../v2/IncapacityContinuityPlan';
 
 export function BinderPreview({
   database,
@@ -33,6 +34,7 @@ export function BinderPreview({
   const [saved, setSaved] = useState(false);
   const [letterContent, setLetterContent] = useState<string[]>([]);
   const [householdName, setHouseholdName] = useState('');
+  const [incapacityContent, setIncapacityContent] = useState<string[]>([]);
   useEffect(() => {
     if (!database || !dek) return;
     void Promise.all([
@@ -48,7 +50,14 @@ export function BinderPreview({
         'Household',
         householdSchema,
       ).list(),
-    ]).then(([letters, households]) => {
+      createEncryptedRepository(
+        database,
+        dek,
+        'IncapacityContinuityPlan',
+        incapacityPlanSchema,
+      ).list(),
+      createEncryptedRepository(database, dek, 'Person', personSchema).list(),
+    ]).then(([letters, households, plans, people]) => {
       setLetterContent(
         letters
           .filter((letter) => letter.includePrint)
@@ -59,6 +68,14 @@ export function BinderPreview({
           ),
       );
       setHouseholdName(households[0]?.householdName ?? '');
+      const names = new Map(people.map((person) => [person.id, `${person.legalFirstName} ${person.legalLastName}`]));
+      setIncapacityContent(plans.filter((plan) => plan.includeInPrint).flatMap((plan) => [
+        `${names.get(plan.personId) ?? 'Unassigned person'} — ${plan.condition}`,
+        `Financial agent: ${plan.financialAgent || 'Not recorded'} | Healthcare agent: ${plan.healthcareAgent || 'Not recorded'}`,
+        `Household manager: ${plan.householdManager || 'Not recorded'} | Dependent-care contact: ${plan.dependentContact || 'Not recorded'}`,
+        `Instructions: ${plan.instructions || 'Not recorded'}`,
+        '☐ Authority confirmed   ☐ Contacts reached   ☐ Critical bills reviewed   ☐ Care plan activated',
+      ]));
     });
   }, [database, dek]);
   const sectionTitles = useMemo(
@@ -68,6 +85,7 @@ export function BinderPreview({
           'cover',
           'notice',
           'start',
+          'incapacity',
           'first72',
           'doNot',
           'notify',
@@ -103,9 +121,9 @@ export function BinderPreview({
         sectionTitles,
         choices,
         { cover: includeCover },
-        { letters: letterContent },
+        { letters: letterContent, incapacity: incapacityContent },
       ),
-    [sectionTitles, choices, includeCover, letterContent],
+    [sectionTitles, choices, includeCover, letterContent, incapacityContent],
   );
   return (
     <section className={`section-page print-${pageSize}`}>

@@ -24,4 +24,9 @@ test('prepares an incapacity continuity plan using a canonical person', async ({
   await expect(page.getByRole('status')).toContainText('Saved locally');
   await expect(page.getByText('Alex Example — Synthetic incapacity condition')).toBeVisible();
   await expect(page.getByText('☐ Authority confirmed')).toBeVisible();
+  await page.getByRole('link', { name: 'Binder Preview' }).click();
+  await expect(page.getByText('Alex Example — Synthetic incapacity condition')).toBeVisible();
+  await expect(page.getByText('☐ Authority confirmed   ☐ Contacts reached   ☐ Critical bills reviewed   ☐ Care plan activated')).toBeVisible();
+  await page.getByRole('link', { name: 'Export Archive' }).click();
+  await expect(page.getByRole('button', { name: 'Export readable archive (.zip)' })).toBeDisabled();
 });
