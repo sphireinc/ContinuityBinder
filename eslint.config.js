@@ -9,7 +9,7 @@ export default [
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
       parser: tsParser,
-      globals: { atob: 'readonly', btoa: 'readonly', BufferSource: 'readonly', CryptoKey: 'readonly', crypto: 'readonly', document: 'readonly', DOMException: 'readonly', TextDecoder: 'readonly', TextEncoder: 'readonly', window: 'readonly' },
+      globals: { atob: 'readonly', btoa: 'readonly', BufferSource: 'readonly', CryptoKey: 'readonly', crypto: 'readonly', document: 'readonly', DOMException: 'readonly', HTMLInputElement: 'readonly', HTMLSelectElement: 'readonly', HTMLTextAreaElement: 'readonly', TextDecoder: 'readonly', TextEncoder: 'readonly', window: 'readonly' },
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
     plugins: { '@typescript-eslint': tsPlugin },
