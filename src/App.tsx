@@ -434,6 +434,10 @@ export function App() {
     setDek(null);
     setHeader(null);
   };
+  const restored = () => {
+    setDek(null);
+    if (database) void getVaultHeader(database).then(setHeader);
+  };
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
@@ -463,6 +467,16 @@ export function App() {
               setDek(nextDek);
             }}
             onErase={clearVault}
+          />
+        }
+      />
+      <Route
+        path="/binder/backup-restore"
+        element={
+          <EncryptedBackup
+            database={database}
+            restoreOnly={!dek}
+            onRestored={restored}
           />
         }
       />
