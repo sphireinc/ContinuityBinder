@@ -9,7 +9,7 @@ export default [
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
       parser: tsParser,
-      globals: { document: 'readonly' },
+      globals: { document: 'readonly', window: 'readonly' },
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
     plugins: { '@typescript-eslint': tsPlugin },
