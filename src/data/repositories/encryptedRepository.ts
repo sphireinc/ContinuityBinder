@@ -20,12 +20,23 @@ const aad = (id: string, entityType: string, schemaVersion: number) => new TextE
 
 export interface EncryptedRepository<T> { get(id: string): Promise<T | null>; list(): Promise<T[]>; put(record: T): Promise<void>; delete(id: string): Promise<void>; }
 
-export function createEncryptedRepository<T extends { id: string; schemaVersion: number; updatedAt: string }>(db: ContinuityDatabase, dek: CryptoKey, entityType: string, schema: z.ZodType<T>): EncryptedRepository<T> {
+export function createEncryptedRepository<T extends { id: string; schemaVersion: number; updatedAt: string }>(db: ContinuityDatabase, dek: CryptoKey, entityType: string, schema: z.ZodType<T>): EncryptedRepository<T> & { getQuarantinedIds(): string[] } {
+  const quarantined = new Set<string>();
+  const decrypt = async (envelope: EncryptedEnvelope) => {
+    try {
+      const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: base64ToBytes(envelope.iv), additionalData: aad(envelope.id, entityType, envelope.schemaVersion) }, dek, base64ToBytes(envelope.ciphertext));
+      return schema.parse(JSON.parse(new TextDecoder().decode(plaintext)) as unknown);
+    } catch (error) {
+      quarantined.add(envelope.id);
+      throw error;
+    }
+  };
   return {
-    async get(id) { const envelope = await db.encryptedRecords.get(id); if (!envelope || envelope.entityType !== entityType) return null; const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: base64ToBytes(envelope.iv), additionalData: aad(id, entityType, envelope.schemaVersion) }, dek, base64ToBytes(envelope.ciphertext)); return schema.parse(JSON.parse(new TextDecoder().decode(plaintext)) as unknown); },
-    async list() { const envelopes = await db.encryptedRecords.where('entityType').equals(entityType).toArray(); return Promise.all(envelopes.map(async (envelope) => { const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: base64ToBytes(envelope.iv), additionalData: aad(envelope.id, entityType, envelope.schemaVersion) }, dek, base64ToBytes(envelope.ciphertext)); return schema.parse(JSON.parse(new TextDecoder().decode(plaintext)) as unknown); })); },
-    async put(record) { const valid = schema.parse(record); const iv = crypto.getRandomValues(new Uint8Array(12)); const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv, additionalData: aad(valid.id, entityType, valid.schemaVersion) }, dek, encode(valid)); await db.encryptedRecords.put({ id: valid.id, entityType, schemaVersion: valid.schemaVersion, iv: bytesToBase64(iv), ciphertext: bytesToBase64(new Uint8Array(ciphertext)), updatedAt: valid.updatedAt }); },
+    async get(id) { const envelope = await db.encryptedRecords.get(id); if (!envelope || envelope.entityType !== entityType) return null; return decrypt(envelope); },
+    async list() { const envelopes = await db.encryptedRecords.where('entityType').equals(entityType).toArray(); const records: T[] = []; for (const envelope of envelopes) { try { records.push(await decrypt(envelope)); } catch { /* quarantined; callers must not treat the list as complete */ } } return records; },
+    async put(record) { const valid = schema.parse(record); const iv = crypto.getRandomValues(new Uint8Array(12)); const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv, additionalData: aad(valid.id, entityType, valid.schemaVersion) }, dek, encode(valid)); try { await db.encryptedRecords.put({ id: valid.id, entityType, schemaVersion: valid.schemaVersion, iv: bytesToBase64(iv), ciphertext: bytesToBase64(new Uint8Array(ciphertext)), updatedAt: valid.updatedAt }); } catch (error) { if (error instanceof DOMException && error.name === 'QuotaExceededError') throw new Error('Local storage capacity reached. Export an encrypted backup or free device storage before continuing.'); throw error; } },
     async delete(id) { await db.encryptedRecords.delete(id); },
+    getQuarantinedIds() { return [...quarantined]; },
   };
 }
 
