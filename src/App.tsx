@@ -729,7 +729,7 @@ export function App() {
                 ) : path === 'review' ? (
                   <CompletenessReview database={database} dek={dek!} />
                 ) : path === 'preview' ? (
-                  <BinderPreview />
+                  <BinderPreview database={database} dek={dek!} />
                 ) : path === 'export' ? (
                   <ReadableArchiveExport database={database} dek={dek!} />
                 ) : (

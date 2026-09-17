@@ -8,6 +8,7 @@ import {
 } from '../../data/repositories/encryptedRepository';
 import { benefitRecordSchema } from '../insurance/InsuranceBenefits';
 import { personSchema } from '../household/HouseholdSetup';
+import { personalLetterSchema } from '../wishes/WishesLegacy';
 
 export function ReadableArchiveExport({
   database,
@@ -20,8 +21,11 @@ export function ReadableArchiveExport({
   const [confirmed, setConfirmed] = useState(false);
   const [household, setHousehold] = useState('');
   const [done, setDone] = useState(false);
-  const [balanceChoice, setBalanceChoice] = useState<'include' | 'range' | 'omit'>('omit');
+  const [balanceChoice, setBalanceChoice] = useState<
+    'include' | 'range' | 'omit'
+  >('omit');
   const [insuranceContent, setInsuranceContent] = useState<string[]>([]);
+  const [letterContent, setLetterContent] = useState<string[]>([]);
   useEffect(() => {
     if (!database) return;
     void Promise.all([
@@ -32,7 +36,13 @@ export function ReadableArchiveExport({
         benefitRecordSchema,
       ).list(),
       createEncryptedRepository(database, dek, 'Person', personSchema).list(),
-    ]).then(([benefits, people]) => {
+      createEncryptedRepository(
+        database,
+        dek,
+        'PersonalLetter',
+        personalLetterSchema,
+      ).list(),
+    ]).then(([benefits, people, letters]) => {
       const names = new Map(
         people.map((person) => [
           person.id,
@@ -44,6 +54,15 @@ export function ReadableArchiveExport({
           (benefit) =>
             `${names.get(benefit.insuredPersonId) ?? 'Unassigned insured'} | ${benefit.carrier} | ${benefit.kind} | ${benefit.identifierDisplayPolicy === 'hidden' ? 'Not printed' : benefit.identifierDisplayPolicy === 'last4' ? `••••${benefit.policyIdentifier.slice(-4)}` : benefit.policyIdentifier} | ${benefit.benefit} | ${benefit.beneficiarySummary} | ${benefit.documentLocation ?? 'No location'} | ${benefit.reviewStatus}`,
         ),
+      );
+      setLetterContent(
+        letters
+          .filter((letter) => letter.includePrint)
+          .map((letter) =>
+            letter.sealed
+              ? `Letter for ${letter.recipients} — private`
+              : `${letter.title}: ${letter.body}`,
+          ),
       );
     });
   }, [database, dek]);
@@ -91,7 +110,7 @@ export function ReadableArchiveExport({
           digital: true,
         },
         {},
-        { insurance: insuranceContent },
+        { insurance: insuranceContent, letters: letterContent },
       ),
       i18n.language,
       household,
@@ -120,10 +139,21 @@ export function ReadableArchiveExport({
       <Text label={t('household')} value={household} onChange={setHousehold} />
       <label>
         {t('valueDisplay', { defaultValue: 'Financial value display' })}
-        <select value={balanceChoice} onChange={(event) => setBalanceChoice(event.target.value as typeof balanceChoice)}>
-          <option value="omit">{t('omitValues', { defaultValue: 'Omit exact values' })}</option>
-          <option value="range">{t('valueRange', { defaultValue: 'Show value range' })}</option>
-          <option value="include">{t('includeValues', { defaultValue: 'Include values' })}</option>
+        <select
+          value={balanceChoice}
+          onChange={(event) =>
+            setBalanceChoice(event.target.value as typeof balanceChoice)
+          }
+        >
+          <option value="omit">
+            {t('omitValues', { defaultValue: 'Omit exact values' })}
+          </option>
+          <option value="range">
+            {t('valueRange', { defaultValue: 'Show value range' })}
+          </option>
+          <option value="include">
+            {t('includeValues', { defaultValue: 'Include values' })}
+          </option>
         </select>
       </label>
       <button
