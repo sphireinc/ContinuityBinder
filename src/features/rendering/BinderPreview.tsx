@@ -22,6 +22,16 @@ export function BinderPreview({
 }) {
   database ??= null;
   const { t } = useTranslation('rendering');
+  const v2 = (key: string) => t(`incapacity_continuity_plan.${key}`, { ns: 'v2' });
+  const emptyIncapacityContent = [
+    v2('intro'),
+    v2('caution'),
+    `☐ ${v2('authorityConfirmed')}   ☐ ${v2('contactsReached')}   ☐ ${v2('billsReviewed')}   ☐ ${v2('careActivated')}`,
+    `${v2('preparerNotes')}: ________________________________________________________________`,
+    '[PAGE_BREAK]',
+    `${v2('preparerNotes')}: ________________________________________________________________`,
+    'Date: ____ / ____ / ______    Initials: __________    Reference: __________',
+  ];
   const [choices, setChoices] = useState<BinderChoices>({
     identifier: 'last4',
     balances: 'omit',
@@ -34,15 +44,7 @@ export function BinderPreview({
   const [saved, setSaved] = useState(false);
   const [letterContent, setLetterContent] = useState<string[]>([]);
   const [householdName, setHouseholdName] = useState('');
-  const [incapacityContent, setIncapacityContent] = useState<string[]>([
-    'Prepare a clear handoff when an adult is alive but unable to act.',
-    'Keep the record factual and specific. Do not imply that this form creates legal authority or replaces professional documents.',
-    '☐ Authority confirmed   ☐ Contacts reached   ☐ Critical bills reviewed   ☐ Care plan activated',
-    'Notes: ________________________________________________________________',
-    '[PAGE_BREAK]',
-    'Follow-up notes: ______________________________________________________',
-    'Date: ____ / ____ / ______    Initials: __________    Reference: __________',
-  ]);
+  const [incapacityContent, setIncapacityContent] = useState<string[]>(emptyIncapacityContent);
   useEffect(() => {
     if (!database || !dek) return;
     void Promise.all([
@@ -78,17 +80,17 @@ export function BinderPreview({
       setHouseholdName(households[0]?.householdName ?? '');
       const names = new Map(people.map((person) => [person.id, `${person.legalFirstName} ${person.legalLastName}`]));
       const planContent = plans.filter((plan) => plan.includeInPrint).flatMap((plan) => [
-        `${names.get(plan.personId) ?? 'Unassigned person'} — ${plan.condition}`,
-        `Financial agent: ${plan.financialAgent || 'Not recorded'} | Healthcare agent: ${plan.healthcareAgent || 'Not recorded'}`,
-        `Household manager: ${plan.householdManager || 'Not recorded'} | Dependent-care contact: ${plan.dependentContact || 'Not recorded'}`,
-        `Instructions: ${plan.instructions || 'Not recorded'}`,
-        '☐ Authority confirmed   ☐ Contacts reached   ☐ Critical bills reviewed   ☐ Care plan activated',
-        'Notes: ________________________________________________________________',
+        `${names.get(plan.personId) ?? v2('person')} — ${plan.condition}`,
+        `${v2('financialAgent')}: ${plan.financialAgent} | ${v2('healthcareAgent')}: ${plan.healthcareAgent}`,
+        `${v2('householdManager')}: ${plan.householdManager} | ${v2('dependentContact')}: ${plan.dependentContact}`,
+        `${v2('instructions')}: ${plan.instructions}`,
+        `☐ ${v2('authorityConfirmed')}   ☐ ${v2('contactsReached')}   ☐ ${v2('billsReviewed')}   ☐ ${v2('careActivated')}`,
+        `${v2('preparerNotes')}: ________________________________________________________________`,
         '[PAGE_BREAK]',
-        'Follow-up notes: ______________________________________________________',
+        `${v2('preparerNotes')}: ________________________________________________________________`,
         'Date: ____ / ____ / ______    Initials: __________    Reference: __________',
       ]);
-      if (planContent.length > 0) setIncapacityContent(planContent);
+      setIncapacityContent(planContent.length > 0 ? planContent : emptyIncapacityContent);
     });
   }, [database, dek]);
   const sectionTitles = useMemo(

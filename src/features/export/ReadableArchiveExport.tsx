@@ -19,6 +19,7 @@ export function ReadableArchiveExport({
   dek: CryptoKey;
 }) {
   const { t, i18n } = useTranslation('export');
+  const v2 = (key: string) => t(`incapacity_continuity_plan.${key}`, { ns: 'v2' });
   const [confirmed, setConfirmed] = useState(false);
   const [household, setHousehold] = useState('');
   const [done, setDone] = useState(false);
@@ -68,22 +69,22 @@ export function ReadableArchiveExport({
           ),
       );
       const planContent = plans.filter((plan) => plan.includeInReadableExport).flatMap((plan) => [
-        `${names.get(plan.personId) ?? 'Unassigned person'} — ${plan.condition}`,
-        `Financial agent: ${plan.financialAgent || 'Not recorded'} | Healthcare agent: ${plan.healthcareAgent || 'Not recorded'}`,
-        `Instructions: ${plan.instructions || 'Not recorded'}`,
-        '- [ ] Authority confirmed   - [ ] Contacts reached   - [ ] Critical bills reviewed   - [ ] Care plan activated',
-        'Notes: ________________________________________________________________',
+        `${names.get(plan.personId) ?? v2('person')} — ${plan.condition}`,
+        `${v2('financialAgent')}: ${plan.financialAgent} | ${v2('healthcareAgent')}: ${plan.healthcareAgent}`,
+        `${v2('instructions')}: ${plan.instructions}`,
+        `- [ ] ${v2('authorityConfirmed')}   - [ ] ${v2('contactsReached')}   - [ ] ${v2('billsReviewed')}   - [ ] ${v2('careActivated')}`,
+        `${v2('preparerNotes')}: ________________________________________________________________`,
         '[PAGE_BREAK]',
-        'Follow-up notes: ______________________________________________________',
+        `${v2('preparerNotes')}: ________________________________________________________________`,
         'Date: ____ / ____ / ______    Initials: __________    Reference: __________',
       ]);
       setIncapacityContent(planContent.length > 0 ? planContent : [
-        'Prepare a clear handoff when an adult is alive but unable to act.',
-        'Keep the record factual and specific. Do not imply that this form creates legal authority or replaces professional documents.',
-        '- [ ] Authority confirmed   - [ ] Contacts reached   - [ ] Critical bills reviewed   - [ ] Care plan activated',
-        'Notes: ________________________________________________________________',
+        v2('intro'),
+        v2('caution'),
+        `- [ ] ${v2('authorityConfirmed')}   - [ ] ${v2('contactsReached')}   - [ ] ${v2('billsReviewed')}   - [ ] ${v2('careActivated')}`,
+        `${v2('preparerNotes')}: ________________________________________________________________`,
         '[PAGE_BREAK]',
-        'Follow-up notes: ______________________________________________________',
+        `${v2('preparerNotes')}: ________________________________________________________________`,
         'Date: ____ / ____ / ______    Initials: __________    Reference: __________',
       ]);
     });
