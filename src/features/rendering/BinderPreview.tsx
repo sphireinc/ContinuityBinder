@@ -34,7 +34,15 @@ export function BinderPreview({
   const [saved, setSaved] = useState(false);
   const [letterContent, setLetterContent] = useState<string[]>([]);
   const [householdName, setHouseholdName] = useState('');
-  const [incapacityContent, setIncapacityContent] = useState<string[]>([]);
+  const [incapacityContent, setIncapacityContent] = useState<string[]>([
+    'Prepare a clear handoff when an adult is alive but unable to act.',
+    'Keep the record factual and specific. Do not imply that this form creates legal authority or replaces professional documents.',
+    '☐ Authority confirmed   ☐ Contacts reached   ☐ Critical bills reviewed   ☐ Care plan activated',
+    'Notes: ________________________________________________________________',
+    '[PAGE_BREAK]',
+    'Follow-up notes: ______________________________________________________',
+    'Date: ____ / ____ / ______    Initials: __________    Reference: __________',
+  ]);
   useEffect(() => {
     if (!database || !dek) return;
     void Promise.all([
@@ -69,7 +77,7 @@ export function BinderPreview({
       );
       setHouseholdName(households[0]?.householdName ?? '');
       const names = new Map(people.map((person) => [person.id, `${person.legalFirstName} ${person.legalLastName}`]));
-      setIncapacityContent(plans.filter((plan) => plan.includeInPrint).flatMap((plan) => [
+      const planContent = plans.filter((plan) => plan.includeInPrint).flatMap((plan) => [
         `${names.get(plan.personId) ?? 'Unassigned person'} — ${plan.condition}`,
         `Financial agent: ${plan.financialAgent || 'Not recorded'} | Healthcare agent: ${plan.healthcareAgent || 'Not recorded'}`,
         `Household manager: ${plan.householdManager || 'Not recorded'} | Dependent-care contact: ${plan.dependentContact || 'Not recorded'}`,
@@ -79,7 +87,8 @@ export function BinderPreview({
         '[PAGE_BREAK]',
         'Follow-up notes: ______________________________________________________',
         'Date: ____ / ____ / ______    Initials: __________    Reference: __________',
-      ]));
+      ]);
+      if (planContent.length > 0) setIncapacityContent(planContent);
     });
   }, [database, dek]);
   const sectionTitles = useMemo(
@@ -115,7 +124,7 @@ export function BinderPreview({
           'locations',
           'contacts',
           'review',
-        ].map((key) => [key, t(`sectionNames.${key}`)]),
+        ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : t(`sectionNames.${key}`)]),
       ),
     [t],
   );
