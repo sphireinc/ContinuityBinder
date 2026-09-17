@@ -9,6 +9,8 @@ describe('legal and estate records', () => {
     render(<MemoryRouter><LegalEstate database={null} dek={{} as CryptoKey} /></MemoryRouter>);
     expect(screen.getByText('Record metadata only. Continuity Binder does not generate or validate legal instruments.')).toBeInTheDocument();
     expect(screen.getByText('Naming a person here does not legally appoint them. This record should reflect your signed legal documents.')).toBeInTheDocument();
+    expect(screen.getByLabelText('Copy location (optional)')).toBeInTheDocument();
+    expect(screen.getByLabelText('Assigned person or contact')).toBeInTheDocument();
   });
 
   it('requires document type in the LegalRecord schema', () => {
