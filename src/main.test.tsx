@@ -53,4 +53,13 @@ describe('application baseline', () => {
     expect(screen.getByText(/readable archive and printed binder can be read without your passphrase/i)).toBeInTheDocument();
     expect(screen.getByText(/does not create or replace legal instruments/i)).toBeInTheDocument();
   });
+
+  it('shows the three required first-run education screens before setup', async () => {
+    render(<MemoryRouter initialEntries={['/binder/setup']}><App /></MemoryRouter>);
+    expect(screen.getByRole('heading', { name: 'This binder stays on this device.' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    expect(screen.getByRole('heading', { name: 'Create a passphrase you can preserve safely.' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    expect(screen.getByRole('heading', { name: 'Create encrypted backups regularly.' })).toBeInTheDocument();
+  });
 });

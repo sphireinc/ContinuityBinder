@@ -2,6 +2,9 @@ import { expect, test } from '@playwright/test';
 
 async function createBinder(page: import('@playwright/test').Page) {
   await page.goto('/binder/setup');
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Begin binder setup' }).click();
   await page.getByRole('textbox', { name: 'Passphrase', exact: true }).fill('a deliberately long passphrase');
   await page.getByRole('textbox', { name: 'Confirm passphrase' }).fill('a deliberately long passphrase');
   await page.getByRole('checkbox', { name: 'I understand that Continuity Binder cannot recover this passphrase.' }).check();

@@ -38,6 +38,7 @@ import { ReadableArchiveExport } from './features/export/ReadableArchiveExport';
 import { EncryptedBackup } from './features/backup/EncryptedBackup';
 import { buildDiagnosticInfo } from './diagnostics';
 import { Help } from './features/help/Help';
+import { FirstRunEducation } from './features/education/FirstRunEducation';
 
 const navigation = [
   ['overview', 'overview'],
@@ -173,8 +174,10 @@ function Setup({
   const [passphrase, setPassphrase] = useState('');
   const [confirmation, setConfirmation] = useState('');
   const [acknowledged, setAcknowledged] = useState(false);
+  const [educationStep, setEducationStep] = useState(0);
   const valid =
     passphrase.length >= 12 && passphrase === confirmation && acknowledged;
+  if (educationStep < 3) return <FirstRunEducation step={educationStep} onNext={() => setEducationStep((step) => step + 1)} onSkip={() => setEducationStep(3)} />;
   return (
     <main className="public-page">
       <p className="eyebrow">{t('appName')}</p>
