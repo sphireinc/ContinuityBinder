@@ -25,4 +25,23 @@ describe('application baseline', () => {
     expect(await screen.findByRole('heading', { name: 'Cómo funciona' })).toBeInTheDocument();
     expect(document.documentElement.lang).toBe('es');
   });
+
+  it('publishes the required privacy and disclaimer boundaries', async () => {
+    await i18n.changeLanguage('en');
+    render(<MemoryRouter initialEntries={['/privacy']}><App /></MemoryRouter>);
+    expect(screen.getByText(/no user account and no binder-data backend/i)).toBeInTheDocument();
+    expect(screen.getByText(/static host necessarily receives ordinary request metadata/i)).toBeInTheDocument();
+    expect(screen.getByText(/clearing site data or the browser profile can delete local binder data/i)).toBeInTheDocument();
+  });
+
+  it('publishes the security model and organizational disclaimer', async () => {
+    await i18n.changeLanguage('en');
+    const { unmount } = render(<MemoryRouter initialEntries={['/security']}><App /></MemoryRouter>);
+    expect(screen.getByText(/AES-GCM/i)).toBeInTheDocument();
+    expect(screen.getByText(/There is no password recovery/i)).toBeInTheDocument();
+    unmount();
+    render(<MemoryRouter initialEntries={['/disclaimer']}><App /></MemoryRouter>);
+    expect(screen.getByText(/Continuity Binder is an organizational tool/i)).toBeInTheDocument();
+    expect(screen.getByText(/Verify legal documents and beneficiary designations/i)).toBeInTheDocument();
+  });
 });
