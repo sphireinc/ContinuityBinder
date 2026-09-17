@@ -24,13 +24,14 @@ a:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
 .sidebar .wordmark { color: white; margin-bottom: 24px; }
 .security-indicator { color: #cbd4ce; font-size: 13px; }
 .sidebar nav { display: grid; gap: 4px; margin-top: 32px; }
-.sidebar nav a { color: #d8dedb; padding: 10px 12px; border-left: 3px solid transparent; text-decoration: none; }
+.sidebar nav a { color: #d8dedb; min-height: 44px; display: flex; align-items: center; padding: 10px 12px; border-left: 3px solid transparent; text-decoration: none; }
 .sidebar nav a.active, .sidebar nav a:hover { background: #2d3631; border-left-color: #91b099; color: white; }
 .content-region { min-width: 0; background: #f4f3ef; }
 .utility-bar { min-height: 64px; display: flex; align-items: center; gap: 20px; padding: 0 40px; background: white; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1; }
 .utility-bar h1 { margin: 0; font-size: 20px; flex: 1; }
 .save-state { color: var(--muted); font-size: 14px; }
-.lock-button { min-height: 40px; padding: 0 16px; border: 1px solid var(--border); border-radius: 6px; background: white; color: var(--sidebar); cursor: pointer; }
+.lock-button { min-height: 44px; padding: 0 16px; border: 1px solid var(--border); border-radius: 6px; background: white; color: var(--sidebar); cursor: pointer; }
+.button:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 .page-content { max-width: 960px; padding: 32px 40px 64px; }
 .skip-link { position: fixed; left: 16px; top: -60px; z-index: 3; padding: 12px; background: white; }
 .skip-link:focus { top: 16px; }
@@ -88,6 +89,7 @@ p { line-height: 1.5; }
 .binder-cover { min-height: 360px; display: grid; place-content: center; text-align: center; break-after: page; }
 .binder-cover h2 { font-family: Georgia, 'Times New Roman', serif; font-size: 42px; }
 .binder-preview > ol > li { break-inside: avoid; margin: 20px 0; }
+@media (max-width: 700px) { .table-scroll { overflow-x: auto; } .table-scroll table { min-width: 640px; } }
 @media print {
   @page { size: Letter; margin: .65in .65in .7in; }
   .print-a4 { page: a4; }
