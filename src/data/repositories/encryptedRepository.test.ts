@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { createVault } from '../../crypto/vault';
 import { createEncryptedRepository, type ContinuityDatabase, type EncryptedEnvelope } from './encryptedRepository';
+import { contactSchema } from '../../features/contacts/PeopleContacts';
 
 class MemoryTable {
   records = new Map<string, EncryptedEnvelope>();
@@ -46,5 +47,17 @@ describe('encrypted repository', () => {
     table.records.get('corrupt')!.ciphertext = 'AA==';
     await expect(repository.list()).resolves.toEqual([]);
     expect(repository.getQuarantinedIds()).toEqual(['corrupt']);
+  });
+
+  it('keeps a shared Contact phone value consistent for every reference', async () => {
+    const { dek } = await createVault('a deliberately long passphrase');
+    const table = new MemoryTable();
+    const db = { encryptedRecords: table } as unknown as ContinuityDatabase;
+    const repository = createEncryptedRepository(db, dek, 'Contact', contactSchema);
+    const base = { id: 'contact-1', schemaVersion: 1, createdAt: '2026-09-17T00:00:00.000Z', displayName: 'Executor', role: 'attorney' as const };
+    await repository.put({ ...base, updatedAt: base.createdAt, phone: '555-0100' });
+    await repository.put({ ...base, updatedAt: '2026-09-17T00:01:00.000Z', phone: '555-0111' });
+    await expect(repository.get(base.id)).resolves.toMatchObject({ phone: '555-0111' });
+    await expect(repository.list()).resolves.toEqual([expect.objectContaining({ id: base.id, phone: '555-0111' })]);
   });
 });
