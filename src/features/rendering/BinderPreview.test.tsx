@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
 import '../../i18n/config';
@@ -19,5 +19,16 @@ describe('binder preview print controls', () => {
     expect(screen.getByLabelText('Page size')).toBeInTheDocument();
     expect(screen.getByLabelText('Include cover')).toBeInTheDocument();
     expect(screen.getByText('Personal letters: Include')).toBeInTheDocument();
+  });
+
+  it('honors the cover inclusion choice in the rendered preview', () => {
+    render(
+      <MemoryRouter>
+        <BinderPreview />
+      </MemoryRouter>,
+    );
+    expect(screen.getByRole('heading', { name: 'Continuity Binder' })).toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText('Include cover'));
+    expect(screen.queryByRole('heading', { name: 'Continuity Binder' })).not.toBeInTheDocument();
   });
 });

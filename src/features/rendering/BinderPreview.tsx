@@ -10,6 +10,7 @@ import {
   type ContinuityDatabase,
 } from '../../data/repositories/encryptedRepository';
 import { personalLetterSchema } from '../wishes/WishesLegacy';
+import { householdSchema } from '../household/HouseholdSetup';
 
 export function BinderPreview({
   database,
@@ -31,26 +32,34 @@ export function BinderPreview({
   const [includeCover, setIncludeCover] = useState(true);
   const [saved, setSaved] = useState(false);
   const [letterContent, setLetterContent] = useState<string[]>([]);
+  const [householdName, setHouseholdName] = useState('');
   useEffect(() => {
     if (!database || !dek) return;
-    void createEncryptedRepository(
-      database,
-      dek,
-      'PersonalLetter',
-      personalLetterSchema,
-    )
-      .list()
-      .then((letters) =>
-        setLetterContent(
-          letters
-            .filter((letter) => letter.includePrint)
-            .map((letter) =>
-              letter.sealed
-                ? `Letter for ${letter.recipients} — private`
-                : `${letter.title}: ${letter.body}`,
-            ),
-        ),
+    void Promise.all([
+      createEncryptedRepository(
+        database,
+        dek,
+        'PersonalLetter',
+        personalLetterSchema,
+      ).list(),
+      createEncryptedRepository(
+        database,
+        dek,
+        'Household',
+        householdSchema,
+      ).list(),
+    ]).then(([letters, households]) => {
+      setLetterContent(
+        letters
+          .filter((letter) => letter.includePrint)
+          .map((letter) =>
+            letter.sealed
+              ? `Letter for ${letter.recipients} — private`
+              : `${letter.title}: ${letter.body}`,
+          ),
       );
+      setHouseholdName(households[0]?.householdName ?? '');
+    });
   }, [database, dek]);
   const sectionTitles = useMemo(
     () =>
@@ -181,14 +190,17 @@ export function BinderPreview({
         {saved && <p role="status">{t('saved')}</p>}
       </div>
       <div className="binder-preview">
-        <header className="binder-cover">
-          <h2>{t('cover')}</h2>
-          <p>{t('prepared')}</p>
-          <p>{t('confidential')}</p>
-          <small>
-            {t('lastUpdated')}: {document.metadata.generatedAt}
-          </small>
-        </header>
+        {includeCover && (
+          <header className="binder-cover">
+            <h2>{t('cover')}</h2>
+            {householdName && <p>{householdName}</p>}
+            <p>{t('prepared')}</p>
+            <p>{t('confidential')}</p>
+            <small>
+              {t('lastUpdated')}: {document.metadata.generatedAt}
+            </small>
+          </header>
+        )}
         <h3>{t('preview')}</h3>
         <ol>
           {document.sections.map((section) => (
