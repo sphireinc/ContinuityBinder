@@ -31,6 +31,7 @@ test('sets up a household, locks, and unlocks the binder', async ({ page }) => {
   await page.getByRole('button', { name: 'Unlock binder' }).click();
   await expect(page).toHaveURL(/\/binder\/overview$/);
   await page.getByRole('link', { name: 'Settings' }).click();
+  await expect(page.getByText('Before erasing, make an encrypted backup if you may need this binder again.')).toBeVisible();
   await page.getByRole('textbox', { name: 'Current passphrase' }).last().fill('a deliberately different passphrase');
   await page.getByRole('textbox', { name: 'Type ERASE to confirm' }).fill('ERASE');
   await page.getByRole('button', { name: 'Erase local binder' }).click();
