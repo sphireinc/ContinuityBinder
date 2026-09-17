@@ -1,7 +1,7 @@
 import JSZip from 'jszip';
 import { z } from 'zod';
 import { getVaultHeader, type ContinuityDatabase, type EncryptedEnvelope } from '../data/repositories/encryptedRepository';
-import type { VaultHeader } from '../crypto/vault';
+import { unlockVault, type VaultHeader } from '../crypto/vault';
 
 const FORMAT_VERSION = 1;
 const encoder = new TextEncoder();
@@ -52,6 +52,24 @@ export async function validateEncryptedBackup(blob: Parameters<typeof JSZip.load
   } catch (error) {
     throw new Error('Invalid encrypted backup structure or checksum.', { cause: error });
   }
+}
+
+export async function restoreEncryptedBackup(database: ContinuityDatabase, blob: Parameters<typeof JSZip.loadAsync>[0], passphrase: string) {
+  const manifest = await validateEncryptedBackup(blob);
+  const zip = await JSZip.loadAsync(blob);
+  const header = vaultHeaderSchema.parse(JSON.parse(await zip.file('vault-header.json')!.async('text')) as unknown);
+  const records = z.array(envelopeSchema).parse(JSON.parse(await zip.file('encrypted-records.json')!.async('text')) as unknown);
+  const migrationMeta = z.array(z.object({ key: z.string(), value: z.string() })).parse(JSON.parse(await zip.file('migration-meta.json')!.async('text')) as unknown);
+  await unlockVault(passphrase, header);
+  await database.transaction('rw', [database.vaultMeta, database.encryptedRecords, database.migrationMeta], async () => {
+    await database.vaultMeta.clear();
+    await database.encryptedRecords.clear();
+    await database.migrationMeta.clear();
+    await database.vaultMeta.put({ key: 'header', header });
+    if (records.length) await database.encryptedRecords.bulkPut(records);
+    if (migrationMeta.length) await database.migrationMeta.bulkPut(migrationMeta);
+  });
+  return manifest;
 }
 
 export type { EncryptedEnvelope, VaultHeader };
