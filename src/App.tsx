@@ -591,7 +591,7 @@ export function App() {
                 ) : path === 'preview' ? (
                   <BinderPreview />
                 ) : path === 'export' ? (
-                  <ReadableArchiveExport />
+                  <ReadableArchiveExport database={database} dek={dek!} />
                 ) : (
                   <ProtectedPage />
                 )

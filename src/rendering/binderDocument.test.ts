@@ -13,4 +13,9 @@ describe('canonical binder document', () => {
     expect(document.sections.some((section) => section.id === 'letters')).toBe(false);
     expect(document.sections.some((section) => section.id === 'digital')).toBe(false);
   });
+
+  it('includes supplied detailed section content in the canonical document', () => {
+    const document = buildBinderDocument({}, { identifier: 'last4', balances: 'omit', letters: true, medical: true, digital: true }, {}, { insurance: ['Synthetic carrier | ••••1234'] });
+    expect(document.sections.find((section) => section.id === 'insurance')?.blocks).toContainEqual({ type: 'paragraph', text: 'Synthetic carrier | ••••1234' });
+  });
 });
