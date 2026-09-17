@@ -24,6 +24,8 @@ describe('immediate response sections', () => {
   it('keeps People to Notify sourced from the contact directory', () => {
     render(<MemoryRouter><ImmediateResponse mode="notify" /></MemoryRouter>);
     expect(screen.getByRole('columnheader', { name: 'Person or organization' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'Phone' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'Email' })).toBeInTheDocument();
     expect(screen.getByText('No contacts have been selected from the directory yet.')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Open Contact Directory' })).toHaveAttribute('href', '/people-contacts');
   });

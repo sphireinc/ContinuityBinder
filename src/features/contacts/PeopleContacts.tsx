@@ -7,7 +7,7 @@ import { addressSchema, personSchema } from '../household/HouseholdSetup';
 import { z } from 'zod';
 
 const base = { id: z.string(), schemaVersion: z.number(), createdAt: z.string(), updatedAt: z.string() };
-export const contactSchema = z.object({ ...base, displayName: z.string().min(1), role: z.enum(['attorney', 'cpa', 'financialAdviser', 'insuranceAgent', 'funeralHome', 'clergy', 'physician', 'veterinarian', 'school', 'employerHr', 'businessPartner', 'propertyService', 'friendFamily', 'other']), phone: z.string().optional(), email: z.string().optional(), addressId: z.string().optional(), notes: z.string().optional() });
+export const contactSchema = z.object({ ...base, displayName: z.string().min(1), role: z.enum(['attorney', 'cpa', 'financialAdviser', 'insuranceAgent', 'funeralHome', 'clergy', 'physician', 'veterinarian', 'school', 'employerHr', 'businessPartner', 'propertyService', 'friendFamily', 'other']), phone: z.string().optional(), email: z.string().optional(), addressId: z.string().optional(), notes: z.string().optional(), priority: z.string().optional(), purpose: z.string().optional(), caller: z.string().optional() });
 type Person = z.infer<typeof personSchema>;
 type Contact = z.infer<typeof contactSchema>;
 type Address = z.infer<typeof addressSchema>;
