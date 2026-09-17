@@ -1,1 +1,1 @@
-{}
+{"title":"Export Archive","button":"Export readable archive (.zip)","warning":"This archive is readable without your Continuity Binder passphrase. Anyone who can open these files can read the included information. Store it securely.","confirm":"I understand this archive is readable without my passphrase.","household":"Household name (optional)","exported":"Archive created locally.","download":"Download archive","noSections":"No sections selected."}
