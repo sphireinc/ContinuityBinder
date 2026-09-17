@@ -17,4 +17,26 @@ describe('readable archive export', () => {
     expect(index).not.toContain('https://');
     expect(index).toContain('Privacy warning');
   });
+
+  it('escapes active markup and keeps generated paths safe', async () => {
+    const document = buildBinderDocument(
+      { start: '<Start & [details]>' },
+      { identifier: 'last4', balances: 'omit', letters: true, medical: true, digital: true },
+      { cover: false },
+      { start: ['<script>alert("x")</script> *private* `text`'] },
+    );
+    const blob = await exportReadableArchive(document, 'en', 'Family <record>');
+    const zip = await JSZip.loadAsync(blob);
+    const htmlName = Object.keys(zip.files).find((name) => name.endsWith('/html/01-start.html'));
+    const markdownName = Object.keys(zip.files).find((name) => name.endsWith('/markdown/01-start.md'));
+    expect(htmlName).toBeDefined();
+    expect(markdownName).toBeDefined();
+    const html = await zip.file(htmlName!)!.async('string');
+    const markdown = await zip.file(markdownName!)!.async('string');
+    expect(html).toContain('&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;');
+    expect(html).not.toContain('<script>');
+    expect(markdown).toContain('\\*private\\*');
+    expect(markdown).toContain('\\`text\\`');
+    expect(Object.keys(zip.files).every((name) => !name.includes('..'))).toBe(true);
+  });
 });
