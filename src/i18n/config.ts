@@ -44,6 +44,8 @@ import enHelp from './locales/en/help.json';
 import esHelp from './locales/es/help.json';
 import enEducation from './locales/en/education.json';
 import esEducation from './locales/es/education.json';
+import enSettings from './locales/en/settings.json';
+import esSettings from './locales/es/settings.json';
 
 const storedLocale = window.localStorage.getItem('continuity-binder-locale');
 export const supportedLocales = ['en', 'es'] as const;
@@ -53,8 +55,8 @@ document.documentElement.lang = initialLocale;
 document.documentElement.dir = 'ltr';
 
 export const resources = {
-    en: { common: enCommon, landing: enLanding, navigation: enNavigation, sections: enSections, contacts: enContacts, legal: enLegal, insurance: enInsurance, finance: enFinance, debts: enDebts, property: enProperty, business: enBusiness, digital: enDigital, care: enCare, tax: enTax, wishes: enWishes, review: enReview, rendering: enRendering, export: enExport, backup: enBackup, public: enPublic, help: enHelp, education: enEducation },
-    es: { common: esCommon, landing: esLanding, navigation: esNavigation, sections: esSections, contacts: esContacts, legal: esLegal, insurance: esInsurance, finance: esFinance, debts: esDebts, property: esProperty, business: esBusiness, digital: esDigital, care: esCare, tax: esTax, wishes: esWishes, review: esReview, rendering: esRendering, export: esExport, backup: esBackup, public: esPublic, help: esHelp, education: esEducation },
+    en: { common: enCommon, landing: enLanding, navigation: enNavigation, sections: enSections, contacts: enContacts, legal: enLegal, insurance: enInsurance, finance: enFinance, debts: enDebts, property: enProperty, business: enBusiness, digital: enDigital, care: enCare, tax: enTax, wishes: enWishes, review: enReview, rendering: enRendering, export: enExport, backup: enBackup, public: enPublic, help: enHelp, education: enEducation, settings: enSettings },
+    es: { common: esCommon, landing: esLanding, navigation: esNavigation, sections: esSections, contacts: esContacts, legal: esLegal, insurance: esInsurance, finance: esFinance, debts: esDebts, property: esProperty, business: esBusiness, digital: esDigital, care: esCare, tax: esTax, wishes: esWishes, review: esReview, rendering: esRendering, export: esExport, backup: esBackup, public: esPublic, help: esHelp, education: esEducation, settings: esSettings },
 };
 
 void i18n.use(initReactI18next).init({

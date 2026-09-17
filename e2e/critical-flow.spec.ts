@@ -20,4 +20,14 @@ test('sets up a household, locks, and unlocks the binder', async ({ page }) => {
   await page.getByRole('textbox', { name: 'Passphrase', exact: true }).fill('a deliberately long passphrase');
   await page.getByRole('button', { name: 'Unlock binder' }).click();
   await expect(page).toHaveURL(/\/binder\/overview$/);
+  await page.getByRole('link', { name: 'Settings' }).click();
+  await page.getByRole('textbox', { name: 'Current passphrase' }).fill('a deliberately long passphrase');
+  await page.getByRole('textbox', { name: 'New passphrase', exact: true }).fill('a deliberately different passphrase');
+  await page.getByRole('textbox', { name: 'Confirm new passphrase' }).fill('a deliberately different passphrase');
+  await page.getByRole('button', { name: 'Change passphrase' }).last().click();
+  await expect(page.getByRole('status')).toContainText('Passphrase changed locally');
+  await page.getByRole('button', { name: 'Lock' }).click();
+  await page.getByRole('textbox', { name: 'Passphrase', exact: true }).fill('a deliberately different passphrase');
+  await page.getByRole('button', { name: 'Unlock binder' }).click();
+  await expect(page).toHaveURL(/\/binder\/overview$/);
 });

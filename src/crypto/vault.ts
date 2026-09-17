@@ -16,7 +16,7 @@ export async function createVault(passphrase: string): Promise<{ header: VaultHe
 
 export async function unlockVault(passphrase: string, header: VaultHeader): Promise<CryptoKey> {
   const kek = await keyFromPassphrase(passphrase, base64ToBytes(header.salt), header.iterations);
-  return crypto.subtle.unwrapKey('raw', base64ToBytes(header.wrappedDek), kek, { name: 'AES-GCM', iv: base64ToBytes(header.wrapIv) }, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+  return crypto.subtle.unwrapKey('raw', base64ToBytes(header.wrappedDek), kek, { name: 'AES-GCM', iv: base64ToBytes(header.wrapIv) }, { name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
 }
 
 export async function changeVaultPassphrase(dek: CryptoKey, passphrase: string, previous: VaultHeader): Promise<VaultHeader> {

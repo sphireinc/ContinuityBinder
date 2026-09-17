@@ -17,4 +17,11 @@ describe('vault cryptography', () => {
     await expect(unlockVault('a deliberately long passphrase', changed)).rejects.toThrow();
     await expect(unlockVault('an entirely new passphrase', changed)).resolves.toBeTruthy();
   });
+
+  it('rewraps a DEK obtained by unlocking the vault', async () => {
+    const created = await createVault('a deliberately long passphrase');
+    const unlocked = await unlockVault('a deliberately long passphrase', created.header);
+    const changed = await changeVaultPassphrase(unlocked, 'an entirely new passphrase', created.header);
+    await expect(unlockVault('an entirely new passphrase', changed)).resolves.toBeTruthy();
+  });
 });

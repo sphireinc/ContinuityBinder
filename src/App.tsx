@@ -11,7 +11,7 @@ import {
 } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LanguageSelector } from './i18n/LanguageSelector';
-import { createVault, unlockVault, type VaultHeader } from './crypto/vault';
+import { changeVaultPassphrase, createVault, unlockVault, type VaultHeader } from './crypto/vault';
 import {
   ContinuityDatabase,
   eraseVault,
@@ -356,12 +356,17 @@ function ProtectedPage() {
     </section>
   );
 }
-function AutoLockSettings() {
-  const { t } = useTranslation();
+function AutoLockSettings({ database, header, dek, onHeaderChanged }: { database: ContinuityDatabase | null; header: VaultHeader | null; dek: CryptoKey; onHeaderChanged: (header: VaultHeader) => void }) {
+  const { t } = useTranslation(['common', 'settings']);
   const [minutes, setMinutes] = useState(() =>
     Number(window.localStorage.getItem('continuity-binder-auto-lock') ?? 15),
   );
   const [copied, setCopied] = useState(false);
+  const [currentPassphrase, setCurrentPassphrase] = useState('');
+  const [newPassphrase, setNewPassphrase] = useState('');
+  const [confirmNewPassphrase, setConfirmNewPassphrase] = useState('');
+  const [passphraseStatus, setPassphraseStatus] = useState<'idle' | 'changed' | 'failed'>('idle');
+  const changePassphrase = async () => { if (!database || !header || newPassphrase.length < 12 || newPassphrase !== confirmNewPassphrase) { setPassphraseStatus('failed'); return; } try { await unlockVault(currentPassphrase, header); const nextHeader = await changeVaultPassphrase(dek, newPassphrase, header); await putVaultHeader(database, nextHeader); onHeaderChanged(nextHeader); setCurrentPassphrase(''); setNewPassphrase(''); setConfirmNewPassphrase(''); setPassphraseStatus('changed'); } catch { setPassphraseStatus('failed'); } };
   return (
     <section>
       <p className="eyebrow">{t('appName')}</p>
@@ -401,6 +406,7 @@ function AutoLockSettings() {
           Diagnostic info copied. It contains no binder values.
         </p>
       )}
+      <h2>{t('changePassphrase', { ns: 'settings' })}</h2><p>{t('changePassphraseHelp', { ns: 'settings' })}</p><label>{t('currentPassphrase', { ns: 'settings' })}<input type="password" value={currentPassphrase} onChange={(event) => setCurrentPassphrase(event.target.value)} /></label><label>{t('newPassphrase', { ns: 'settings' })}<input type="password" value={newPassphrase} onChange={(event) => setNewPassphrase(event.target.value)} /></label><label>{t('confirmNewPassphrase', { ns: 'settings' })}<input type="password" value={confirmNewPassphrase} onChange={(event) => setConfirmNewPassphrase(event.target.value)} /></label><button type="button" onClick={() => void changePassphrase()}>{t('change', { ns: 'settings' })}</button>{passphraseStatus === 'changed' && <p role="status">{t('changed', { ns: 'settings' })}</p>}{passphraseStatus === 'failed' && <p role="alert">{t('changeFailed', { ns: 'settings' })}</p>}
     </section>
   );
 }
@@ -551,7 +557,7 @@ export function App() {
               path={path}
               element={
                 path === 'settings/security' ? (
-                  <AutoLockSettings />
+                  <AutoLockSettings database={database} header={header} dek={dek!} onHeaderChanged={setHeader} />
                 ) : path === 'backup-restore' ? (
                   <EncryptedBackup database={database} />
                 ) : path === 'legal-estate' ? (
