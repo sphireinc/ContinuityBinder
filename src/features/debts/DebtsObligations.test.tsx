@@ -10,6 +10,7 @@ describe('debts and household obligations', () => {
     expect(screen.getByText(/does not determine who is legally responsible/i)).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'Criticality' })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'Responsible person' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Keep the household running' })).toBeInTheDocument();
   });
 
   it('allows optional amounts while preserving criticality and autopay fields', () => {

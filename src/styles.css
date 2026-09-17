@@ -103,3 +103,4 @@ p { line-height: 1.5; }
   tr, .section-card { break-inside: avoid; }
   a { color: #111; text-decoration: none; }
 }
+@media print { body.print-running .section-page > *:not(.running-schedule) { display: none !important; } body.print-running .running-schedule { display: block !important; } }
