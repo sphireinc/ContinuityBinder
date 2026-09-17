@@ -4,12 +4,14 @@ import type { VaultHeader } from '../../crypto/vault';
 
 export type EncryptedEnvelope = { id: string; entityType: string; schemaVersion: number; iv: string; ciphertext: string; updatedAt: string };
 export type VaultMetaRecord = { key: 'header'; header: VaultHeader };
+export type EncryptedAttachment = { id: string; filename: string; mimeType: string; size: number; iv: string; ciphertext: string; createdAt: string; updatedAt: string };
 
 export class ContinuityDatabase extends Dexie {
   vaultMeta!: Table<VaultMetaRecord, string>;
   encryptedRecords!: Table<EncryptedEnvelope, string>;
   migrationMeta!: Table<{ key: string; value: string }, string>;
-  constructor(name = 'continuity-binder') { super(name); this.version(1).stores({ vault_meta: '&key', encrypted_records: '&id, entityType, schemaVersion, updatedAt', migration_meta: '&key' }); }
+  attachments!: Table<EncryptedAttachment, string>;
+  constructor(name = 'continuity-binder') { super(name); this.version(1).stores({ vault_meta: '&key', encrypted_records: '&id, entityType, schemaVersion, updatedAt', migration_meta: '&key' }); this.version(2).stores({ vault_meta: '&key', encrypted_records: '&id, entityType, schemaVersion, updatedAt', migration_meta: '&key', attachments: '&id, mimeType, updatedAt' }); }
 }
 
 const bytesToBase64 = (bytes: Uint8Array) => btoa(String.fromCharCode(...bytes));
@@ -42,4 +44,4 @@ export function createEncryptedRepository<T extends { id: string; schemaVersion:
 
 export async function putVaultHeader(db: ContinuityDatabase, header: VaultHeader) { await db.transaction('rw', db.vaultMeta, async () => { await db.vaultMeta.put({ key: 'header', header }); }); }
 export async function getVaultHeader(db: ContinuityDatabase) { return (await db.vaultMeta.get('header'))?.header ?? null; }
-export async function eraseVault(db: ContinuityDatabase) { await db.transaction('rw', [db.vaultMeta, db.encryptedRecords, db.migrationMeta], async () => { await Promise.all([db.vaultMeta.clear(), db.encryptedRecords.clear(), db.migrationMeta.clear()]); }); }
+export async function eraseVault(db: ContinuityDatabase) { await db.transaction('rw', [db.vaultMeta, db.encryptedRecords, db.migrationMeta, db.attachments], async () => { await Promise.all([db.vaultMeta.clear(), db.encryptedRecords.clear(), db.migrationMeta.clear(), db.attachments.clear()]); }); }

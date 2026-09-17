@@ -1,6 +1,6 @@
 import JSZip from 'jszip';
 import { z } from 'zod';
-import { getVaultHeader, type ContinuityDatabase, type EncryptedEnvelope } from '../data/repositories/encryptedRepository';
+import { getVaultHeader, type ContinuityDatabase, type EncryptedEnvelope, type EncryptedAttachment } from '../data/repositories/encryptedRepository';
 import { unlockVault, type VaultHeader } from '../crypto/vault';
 
 const FORMAT_VERSION = 1;
@@ -8,7 +8,7 @@ const encoder = new TextEncoder();
 const vaultHeaderSchema = z.object({ vaultFormatVersion: z.number(), kdf: z.literal('PBKDF2-HMAC-SHA-256'), iterations: z.number().int().min(310_000), salt: z.string(), wrapIv: z.string(), wrappedDek: z.string(), createdAt: z.string(), updatedAt: z.string() });
 const envelopeSchema = z.object({ id: z.string(), entityType: z.string(), schemaVersion: z.number().int(), iv: z.string(), ciphertext: z.string(), updatedAt: z.string() });
 const manifestSchema = z.object({ backupFormatVersion: z.literal(FORMAT_VERSION), createdAt: z.string(), files: z.record(z.string().regex(/^[a-f0-9]{64}$/)) });
-const files = ['vault-header.json', 'encrypted-records.json', 'migration-meta.json', 'settings.json'] as const;
+const files = ['vault-header.json', 'encrypted-records.json', 'encrypted-attachments.json', 'migration-meta.json', 'settings.json'] as const;
 export type BackupSettings = Record<string, string | number | boolean | null>;
 export type BackupManifest = z.infer<typeof manifestSchema>;
 
@@ -18,10 +18,11 @@ function json(value: unknown) { return JSON.stringify(value, null, 2); }
 export async function createEncryptedBackup(database: ContinuityDatabase, settings: BackupSettings = {}) {
   const header = await getVaultHeader(database);
   if (!header) throw new Error('Cannot create a backup before the vault has been initialized.');
-  const [records, migrationMeta] = await Promise.all([database.encryptedRecords.toArray(), database.migrationMeta.toArray()]);
+  const [records, attachments, migrationMeta] = await Promise.all([database.encryptedRecords.toArray(), database.attachments.toArray(), database.migrationMeta.toArray()]);
   const contents: Record<string, string> = {
     'vault-header.json': json(header),
     'encrypted-records.json': json(records),
+    'encrypted-attachments.json': json(attachments),
     'migration-meta.json': json(migrationMeta),
     'settings.json': json(settings),
   };
@@ -46,6 +47,7 @@ export async function validateEncryptedBackup(blob: Parameters<typeof JSZip.load
     }
     vaultHeaderSchema.parse(JSON.parse(await zip.file('vault-header.json')!.async('text')) as unknown);
     z.array(envelopeSchema).parse(JSON.parse(await zip.file('encrypted-records.json')!.async('text')) as unknown);
+    z.array(z.object({ id: z.string(), filename: z.string(), mimeType: z.string(), size: z.number(), iv: z.string(), ciphertext: z.string(), createdAt: z.string(), updatedAt: z.string() })).parse(JSON.parse(await zip.file('encrypted-attachments.json')!.async('text')) as unknown);
     z.array(z.object({ key: z.string(), value: z.string() })).parse(JSON.parse(await zip.file('migration-meta.json')!.async('text')) as unknown);
     z.record(z.union([z.string(), z.number(), z.boolean(), z.null()])).parse(JSON.parse(await zip.file('settings.json')!.async('text')) as unknown);
     return manifest;
@@ -59,14 +61,17 @@ export async function restoreEncryptedBackup(database: ContinuityDatabase, blob:
   const zip = await JSZip.loadAsync(blob);
   const header = vaultHeaderSchema.parse(JSON.parse(await zip.file('vault-header.json')!.async('text')) as unknown);
   const records = z.array(envelopeSchema).parse(JSON.parse(await zip.file('encrypted-records.json')!.async('text')) as unknown);
+  const attachments = z.array(z.object({ id: z.string(), filename: z.string(), mimeType: z.string(), size: z.number(), iv: z.string(), ciphertext: z.string(), createdAt: z.string(), updatedAt: z.string() })).parse(JSON.parse(await zip.file('encrypted-attachments.json')!.async('text')) as unknown) as EncryptedAttachment[];
   const migrationMeta = z.array(z.object({ key: z.string(), value: z.string() })).parse(JSON.parse(await zip.file('migration-meta.json')!.async('text')) as unknown);
   await unlockVault(passphrase, header);
-  await database.transaction('rw', [database.vaultMeta, database.encryptedRecords, database.migrationMeta], async () => {
+  await database.transaction('rw', [database.vaultMeta, database.encryptedRecords, database.attachments, database.migrationMeta], async () => {
     await database.vaultMeta.clear();
     await database.encryptedRecords.clear();
+    await database.attachments.clear();
     await database.migrationMeta.clear();
     await database.vaultMeta.put({ key: 'header', header });
     if (records.length) await database.encryptedRecords.bulkPut(records);
+    if (attachments.length) await database.attachments.bulkPut(attachments);
     if (migrationMeta.length) await database.migrationMeta.bulkPut(migrationMeta);
   });
   return manifest;
