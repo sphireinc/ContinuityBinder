@@ -11,7 +11,7 @@ export class ContinuityDatabase extends Dexie {
   encryptedRecords!: Table<EncryptedEnvelope, string>;
   migrationMeta!: Table<{ key: string; value: string }, string>;
   attachments!: Table<EncryptedAttachment, string>;
-  constructor(name = 'continuity-binder') { super(name); this.version(1).stores({ vault_meta: '&key', encrypted_records: '&id, entityType, schemaVersion, updatedAt', migration_meta: '&key' }); this.version(2).stores({ vault_meta: '&key', encrypted_records: '&id, entityType, schemaVersion, updatedAt', migration_meta: '&key', attachments: '&id, mimeType, updatedAt' }); }
+  constructor(name = 'continuity-binder') { super(name); this.version(1).stores({ vault_meta: '&key', encrypted_records: '&id, entityType, schemaVersion, updatedAt', migration_meta: '&key' }); this.version(2).stores({ vault_meta: '&key', encrypted_records: '&id, entityType, schemaVersion, updatedAt', migration_meta: '&key', attachments: '&id, mimeType, updatedAt' }); this.vaultMeta = this.table('vault_meta'); this.encryptedRecords = this.table('encrypted_records'); this.migrationMeta = this.table('migration_meta'); this.attachments = this.table('attachments'); }
 }
 
 const bytesToBase64 = (bytes: Uint8Array) => btoa(String.fromCharCode(...bytes));
