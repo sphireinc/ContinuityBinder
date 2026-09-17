@@ -38,6 +38,8 @@ import esReview from './locales/es/review.json';
 import esRendering from './locales/es/rendering.json';
 import esExport from './locales/es/export.json';
 import esBackup from './locales/es/backup.json';
+import enPublic from './locales/en/public.json';
+import esPublic from './locales/es/public.json';
 
 const storedLocale = window.localStorage.getItem('continuity-binder-locale');
 export const supportedLocales = ['en', 'es'] as const;
@@ -47,8 +49,8 @@ document.documentElement.lang = initialLocale;
 document.documentElement.dir = 'ltr';
 
 export const resources = {
-    en: { common: enCommon, landing: enLanding, navigation: enNavigation, sections: enSections, contacts: enContacts, legal: enLegal, insurance: enInsurance, finance: enFinance, debts: enDebts, property: enProperty, business: enBusiness, digital: enDigital, care: enCare, tax: enTax, wishes: enWishes, review: enReview, rendering: enRendering, export: enExport, backup: enBackup },
-    es: { common: esCommon, landing: esLanding, navigation: esNavigation, sections: esSections, contacts: esContacts, legal: esLegal, insurance: esInsurance, finance: esFinance, debts: esDebts, property: esProperty, business: esBusiness, digital: esDigital, care: esCare, tax: esTax, wishes: esWishes, review: esReview, rendering: esRendering, export: esExport, backup: esBackup },
+    en: { common: enCommon, landing: enLanding, navigation: enNavigation, sections: enSections, contacts: enContacts, legal: enLegal, insurance: enInsurance, finance: enFinance, debts: enDebts, property: enProperty, business: enBusiness, digital: enDigital, care: enCare, tax: enTax, wishes: enWishes, review: enReview, rendering: enRendering, export: enExport, backup: enBackup, public: enPublic },
+    es: { common: esCommon, landing: esLanding, navigation: esNavigation, sections: esSections, contacts: esContacts, legal: esLegal, insurance: esInsurance, finance: esFinance, debts: esDebts, property: esProperty, business: esBusiness, digital: esDigital, care: esCare, tax: esTax, wishes: esWishes, review: esReview, rendering: esRendering, export: esExport, backup: esBackup, public: esPublic },
 };
 
 void i18n.use(initReactI18next).init({
