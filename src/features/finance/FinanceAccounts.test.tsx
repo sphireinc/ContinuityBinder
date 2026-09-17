@@ -9,6 +9,7 @@ describe('banking and investment accounts', () => {
     render(<MemoryRouter><FinanceAccounts database={null} dek={{} as CryptoKey} /></MemoryRouter>);
     expect(screen.getByText('Omit exact values')).toBeInTheDocument();
     expect(screen.getByText(/For crypto holdings, store a location/i)).toBeInTheDocument();
+    expect(screen.getByLabelText('Owners')).toHaveAttribute('multiple');
   });
 
   it('does not accept PIN or CVV-shaped fields in the canonical schema', () => {

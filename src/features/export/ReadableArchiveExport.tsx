@@ -20,6 +20,7 @@ export function ReadableArchiveExport({
   const [confirmed, setConfirmed] = useState(false);
   const [household, setHousehold] = useState('');
   const [done, setDone] = useState(false);
+  const [balanceChoice, setBalanceChoice] = useState<'include' | 'range' | 'omit'>('omit');
   const [insuranceContent, setInsuranceContent] = useState<string[]>([]);
   useEffect(() => {
     if (!database) return;
@@ -84,7 +85,7 @@ export function ReadableArchiveExport({
         titles,
         {
           identifier: 'last4',
-          balances: 'omit',
+          balances: balanceChoice,
           letters: true,
           medical: true,
           digital: true,
@@ -117,6 +118,14 @@ export function ReadableArchiveExport({
         {t('confirm')}
       </label>
       <Text label={t('household')} value={household} onChange={setHousehold} />
+      <label>
+        {t('valueDisplay', { defaultValue: 'Financial value display' })}
+        <select value={balanceChoice} onChange={(event) => setBalanceChoice(event.target.value as typeof balanceChoice)}>
+          <option value="omit">{t('omitValues', { defaultValue: 'Omit exact values' })}</option>
+          <option value="range">{t('valueRange', { defaultValue: 'Show value range' })}</option>
+          <option value="include">{t('includeValues', { defaultValue: 'Include values' })}</option>
+        </select>
+      </label>
       <button
         type="button"
         className="button button-primary"

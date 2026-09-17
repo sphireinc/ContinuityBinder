@@ -19,6 +19,8 @@ test('renders masked print preview and downloads a readable archive only after c
   await expect(page.getByLabel('Identifiers')).toHaveValue('last4');
   await page.getByRole('button', { name: 'Print / Save PDF' }).click();
   await page.getByRole('link', { name: 'Export archive' }).click();
+  await expect(page.getByLabel('Financial value display')).toHaveValue('omit');
+  await page.getByLabel('Financial value display').selectOption('range');
   const downloadButton = page.getByRole('button', { name: 'Export readable archive (.zip)' });
   await expect(downloadButton).toBeDisabled();
   await page.getByRole('checkbox', { name: 'I understand this archive is readable without my passphrase.' }).check();
