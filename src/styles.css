@@ -82,3 +82,22 @@ p { line-height: 1.5; }
   .site-footer nav { flex-wrap: wrap; gap: 12px 20px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+.print-toolbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.print-toolbar button, .export-choices button { min-height: 42px; padding: 0 18px; border: 1px solid var(--border); border-radius: 6px; background: white; cursor: pointer; }
+.print-copy { color: var(--muted); }
+.binder-cover { min-height: 360px; display: grid; place-content: center; text-align: center; break-after: page; }
+.binder-cover h2 { font-family: Georgia, 'Times New Roman', serif; font-size: 42px; }
+.binder-preview > ol > li { break-inside: avoid; margin: 20px 0; }
+@media print {
+  @page { size: Letter; margin: .65in .65in .7in; }
+  .print-a4 { page: a4; }
+  @page a4 { size: A4; margin: 16mm 16mm 18mm; }
+  .print-toolbar, .export-choices, .utility-bar, .sidebar, .skip-link { display: none !important; }
+  .content-region, .page-content, .section-page { max-width: none; padding: 0; background: white; }
+  body { color: #111; background: white; font-family: Georgia, 'Times New Roman', serif; }
+  h1, h2, h3, h4, strong { color: #111; }
+  table { font-family: Inter, system-ui, sans-serif; font-size: 9pt; }
+  thead { display: table-header-group; }
+  tr, .section-card { break-inside: avoid; }
+  a { color: #111; text-decoration: none; }
+}
