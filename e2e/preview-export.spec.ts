@@ -14,7 +14,7 @@ test('renders masked print preview and downloads a readable archive only after c
   await page.getByRole('link', { name: 'Binder preview' }).click();
   await expect(page.getByRole('heading', { name: 'Export choices' })).toBeVisible();
   await expect(page.getByLabel('Identifiers')).toHaveValue('last4');
-  await page.getByRole('button', { name: 'Print / Save PDF' }).evaluate((button) => { window.print = () => undefined; (button as HTMLElement).click(); });
+  await page.getByRole('button', { name: 'Print / Save PDF' }).click();
   await page.getByRole('link', { name: 'Export archive' }).click();
   const downloadButton = page.getByRole('button', { name: 'Export readable archive (.zip)' });
   await expect(downloadButton).toBeDisabled();

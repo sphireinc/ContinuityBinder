@@ -22,4 +22,13 @@ describe('encrypted local attachments', () => {
     await expect(putEncryptedAttachment(database, dek, { filename: 'page.svg', mimeType: 'image/svg+xml', bytes: new Uint8Array() })).rejects.toThrow('Only PDF');
     await expect(putEncryptedAttachment(database, dek, { filename: 'large.txt', mimeType: 'text/plain', bytes: new Uint8Array(10 * 1024 * 1024 + 1) })).rejects.toThrow('10 MB');
   });
+
+  it('uses a different AES-GCM IV for each attachment write', async () => {
+    const { dek } = await createVault('a deliberately long passphrase');
+    const records: Record<string, Record<string, unknown>> = {};
+    const database = { attachments: { put: async (value: Record<string, unknown>) => { records[String(value.id)] = value; } } } as never;
+    const first = await putEncryptedAttachment(database, dek, { id: 'one', filename: 'one.txt', mimeType: 'text/plain', bytes: new Uint8Array([1]) });
+    const second = await putEncryptedAttachment(database, dek, { id: 'two', filename: 'two.txt', mimeType: 'text/plain', bytes: new Uint8Array([1]) });
+    expect(records[first].iv).not.toBe(records[second].iv);
+  });
 });
