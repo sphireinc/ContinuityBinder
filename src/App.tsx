@@ -39,6 +39,7 @@ import { EncryptedBackup } from './features/backup/EncryptedBackup';
 import { buildDiagnosticInfo } from './diagnostics';
 import { Help } from './features/help/Help';
 import { FirstRunEducation } from './features/education/FirstRunEducation';
+import { migrateAfterUnlock } from './data/migrations';
 
 const navigation = [
   ['overview', 'overview'],
@@ -229,10 +230,12 @@ function Setup({
 }
 function Unlock({
   header,
+  database,
   onUnlock,
   onErase,
 }: {
   header: VaultHeader | null;
+  database: ContinuityDatabase | null;
   onUnlock: (dek: CryptoKey) => void;
   onErase: () => Promise<void>;
 }) {
@@ -253,7 +256,8 @@ function Unlock({
             return;
           }
           void unlockVault(passphrase, header)
-            .then((dek) => {
+            .then(async (dek) => {
+              if (database) await migrateAfterUnlock(database);
               setFailed(false);
               onUnlock(dek);
               navigate('/binder/overview');
@@ -462,6 +466,7 @@ export function App() {
         element={
           <Unlock
             header={header}
+            database={database}
             onUnlock={(nextDek) => {
               setLastActivity(Date.now());
               setDek(nextDek);
