@@ -57,6 +57,7 @@ export const DEFAULT_BINDER_ORDER = [
   'lifeStory',
   'photoVideoArchive',
   'backupStorage',
+  'hardwareSecurityKeys',
   'first72',
   'doNot',
   'notify',
