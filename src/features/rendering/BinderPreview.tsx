@@ -36,6 +36,19 @@ export function BinderPreview({
     `${v2('preparerNotes')}: ________________________________________________________________`,
     'Date: ____ / ____ / ______    Initials: __________    Reference: __________',
   ];
+  const emptyAccountClosureTransferContent = [
+    'Continuity Binder',
+    'IMMEDIATE RESPONSE',
+    t('account_closure_transfer_tracker.title', { ns: 'v2' }),
+    `${t('prepared', { ns: 'rendering' })}: ${new Date().toLocaleDateString()}`,
+    t('account_closure_transfer_tracker.intro', { ns: 'v2' }),
+    t('account_closure_transfer_tracker.caution', { ns: 'v2' }),
+    `☐ ${t('account_closure_transfer_tracker.leaveActive', { ns: 'v2' })}   ☐ ${t('account_closure_transfer_tracker.transfer', { ns: 'v2' })}   ☐ ${t('account_closure_transfer_tracker.close', { ns: 'v2' })}   ☐ ${t('account_closure_transfer_tracker.review', { ns: 'v2' })}   ☐ ${t('account_closure_transfer_tracker.other', { ns: 'v2' })}`,
+    `${t('account_closure_transfer_tracker.completionDate', { ns: 'v2' })}: ____ / ____ / ______    ${t('account_closure_transfer_tracker.initials', { ns: 'v2' })}: __________    ${t('account_closure_transfer_tracker.confirmationNumber', { ns: 'v2' })}: __________`,
+    `${t('account_closure_transfer_tracker.notes', { ns: 'v2' })}: ________________________________________________________________`,
+    '[PAGE_BREAK]',
+    `${t('account_closure_transfer_tracker.notes', { ns: 'v2' })}: ________________________________________________________________`,
+  ];
   const [choices, setChoices] = useState<BinderChoices>({
     identifier: 'last4',
     balances: 'omit',
@@ -121,12 +134,17 @@ export function BinderPreview({
         `☐ ${v2('claimOpened')}   ☐ ${v2('documentsSupplied')}   ☐ ${v2('approved')}   ☐ ${v2('paid')}   ☐ ${v2('closed')}`,
         `${v2('notes')}: ________________________________________________________________`,
       ]));
-      setAccountClosureTransferContent(accountActions.filter((record) => record.includeInPrint).flatMap((record) => [
+      const accountContent = accountActions.filter((record) => record.includeInPrint).flatMap((record) => [
+        'Continuity Binder',
+        'IMMEDIATE RESPONSE',
+        t('account_closure_transfer_tracker.title', { ns: 'v2' }),
+        `${t('prepared', { ns: 'rendering' })}: ${new Date().toLocaleDateString()}`,
         `${record.accountReference} — ${record.institutionProvider} — ${record.ownerId ? names.get(record.ownerId) ?? record.ownerId : t('account_closure_transfer_tracker.ownerUnknown', { ns: 'v2' })}`,
         `${t('account_closure_transfer_tracker.recommendedAction', { ns: 'v2' })}: ${record.recommendedAction} | ${t('account_closure_transfer_tracker.contact', { ns: 'v2' })}: ${record.contact}`,
         `☐ ${t('account_closure_transfer_tracker.leaveActive', { ns: 'v2' })}   ☐ ${t('account_closure_transfer_tracker.transfer', { ns: 'v2' })}   ☐ ${t('account_closure_transfer_tracker.close', { ns: 'v2' })}   ☐ ${t('account_closure_transfer_tracker.review', { ns: 'v2' })}   ☐ ${t('account_closure_transfer_tracker.other', { ns: 'v2' })}`,
         `${t('account_closure_transfer_tracker.completionDate', { ns: 'v2' })}: ____ / ____ / ______    ${t('account_closure_transfer_tracker.initials', { ns: 'v2' })}: __________    ${t('account_closure_transfer_tracker.confirmationNumber', { ns: 'v2' })}: __________`,
-      ]));
+      ]);
+      setAccountClosureTransferContent(accountContent.length > 0 ? ['[PAGE_BREAK]', ...accountContent] : emptyAccountClosureTransferContent);
     });
   }, [database, dek]);
   const sectionTitles = useMemo(

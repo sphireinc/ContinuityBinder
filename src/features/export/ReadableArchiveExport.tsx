@@ -117,12 +117,30 @@ export function ReadableArchiveExport({
         `- [ ] ${v2('claimOpened')}   - [ ] ${v2('documentsSupplied')}   - [ ] ${v2('approved')}   - [ ] ${v2('paid')}   - [ ] ${v2('closed')}`,
         `${v2('notes')}: ________________________________________________________________`,
       ]));
-      setAccountClosureTransferContent(accountActions.filter((record) => record.includeInReadableExport).flatMap((record) => [
+      const accountContent = accountActions.filter((record) => record.includeInReadableExport).flatMap((record) => [
+        'Continuity Binder',
+        'IMMEDIATE RESPONSE',
+        t('account_closure_transfer_tracker.title', { ns: 'v2' }),
+        `${t('prepared', { ns: 'rendering' })}: ${new Date().toLocaleDateString()}`,
         `${record.accountReference} — ${record.institutionProvider} — ${record.ownerId ? names.get(record.ownerId) ?? record.ownerId : t('account_closure_transfer_tracker.ownerUnknown', { ns: 'v2' })}`,
         `${t('account_closure_transfer_tracker.recommendedAction', { ns: 'v2' })}: ${record.recommendedAction} | ${t('account_closure_transfer_tracker.contact', { ns: 'v2' })}: ${record.contact}`,
         `- [ ] ${t('account_closure_transfer_tracker.leaveActive', { ns: 'v2' })}   - [ ] ${t('account_closure_transfer_tracker.transfer', { ns: 'v2' })}   - [ ] ${t('account_closure_transfer_tracker.close', { ns: 'v2' })}   - [ ] ${t('account_closure_transfer_tracker.review', { ns: 'v2' })}   - [ ] ${t('account_closure_transfer_tracker.other', { ns: 'v2' })}`,
         `${t('account_closure_transfer_tracker.completionDate', { ns: 'v2' })}: ____ / ____ / ______    ${t('account_closure_transfer_tracker.initials', { ns: 'v2' })}: __________    ${t('account_closure_transfer_tracker.confirmationNumber', { ns: 'v2' })}: __________`,
-      ]));
+      ]);
+      setAccountClosureTransferContent(accountContent.length > 0 ? ['[PAGE_BREAK]', ...accountContent] : [
+        '[PAGE_BREAK]',
+        'Continuity Binder',
+        'IMMEDIATE RESPONSE',
+        t('account_closure_transfer_tracker.title', { ns: 'v2' }),
+        `${t('prepared', { ns: 'rendering' })}: ${new Date().toLocaleDateString()}`,
+        t('account_closure_transfer_tracker.intro', { ns: 'v2' }),
+        t('account_closure_transfer_tracker.caution', { ns: 'v2' }),
+        `- [ ] ${t('account_closure_transfer_tracker.leaveActive', { ns: 'v2' })}   - [ ] ${t('account_closure_transfer_tracker.transfer', { ns: 'v2' })}   - [ ] ${t('account_closure_transfer_tracker.close', { ns: 'v2' })}   - [ ] ${t('account_closure_transfer_tracker.review', { ns: 'v2' })}   - [ ] ${t('account_closure_transfer_tracker.other', { ns: 'v2' })}`,
+        `${t('account_closure_transfer_tracker.completionDate', { ns: 'v2' })}: ____ / ____ / ______    ${t('account_closure_transfer_tracker.initials', { ns: 'v2' })}: __________    ${t('account_closure_transfer_tracker.confirmationNumber', { ns: 'v2' })}: __________`,
+        `${t('account_closure_transfer_tracker.notes', { ns: 'v2' })}: ________________________________________________________________`,
+        '\\pagebreak',
+        `${t('account_closure_transfer_tracker.notes', { ns: 'v2' })}: ________________________________________________________________`,
+      ]);
     });
   }, [database, dek]);
   const exportArchive = async () => {
