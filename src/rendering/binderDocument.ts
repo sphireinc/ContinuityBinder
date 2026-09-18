@@ -39,6 +39,7 @@ export const DEFAULT_BINDER_ORDER = [
   'incapacity',
   'deathCertificates',
   'estateAdministration',
+  'claimsBenefits',
   'first72',
   'doNot',
   'notify',

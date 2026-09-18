@@ -14,6 +14,7 @@ import { householdSchema, personSchema } from '../household/HouseholdSetup';
 import { incapacityPlanSchema } from '../v2/IncapacityContinuityPlan';
 import { deathCertificateSchema } from '../v2/DeathCertificateTracker';
 import { estateAdministrationSchema } from '../v2/EstateAdministrationTracker';
+import { claimsBenefitsSchema } from '../v2/ClaimsBenefitsTracker';
 
 export function BinderPreview({
   database,
@@ -49,6 +50,7 @@ export function BinderPreview({
   const [incapacityContent, setIncapacityContent] = useState<string[]>(emptyIncapacityContent);
   const [deathCertificateContent, setDeathCertificateContent] = useState<string[]>([]);
   const [estateAdministrationContent, setEstateAdministrationContent] = useState<string[]>([]);
+  const [claimsBenefitsContent, setClaimsBenefitsContent] = useState<string[]>([]);
   useEffect(() => {
     if (!database || !dek) return;
     void Promise.all([
@@ -73,7 +75,8 @@ export function BinderPreview({
       createEncryptedRepository(database, dek, 'Person', personSchema).list(),
       createEncryptedRepository(database, dek, 'DeathCertificateRecord', deathCertificateSchema).list(),
       createEncryptedRepository(database, dek, 'EstateAdministrationTask', estateAdministrationSchema).list(),
-    ]).then(([letters, households, plans, people, certificates, estateTasks]) => {
+      createEncryptedRepository(database, dek, 'ClaimsBenefitsRecord', claimsBenefitsSchema).list(),
+    ]).then(([letters, households, plans, people, certificates, estateTasks, claims]) => {
       setLetterContent(
         letters
           .filter((letter) => letter.includePrint)
@@ -109,6 +112,12 @@ export function BinderPreview({
         `☐ ${v2('notStarted')}   ☐ ${v2('inProgress')}   ☐ ${v2('completed')}   ☐ ${v2('notApplicable')}`,
         `${v2('notes')}: ________________________________________________________________`,
       ]));
+      setClaimsBenefitsContent(claims.filter((record) => record.includeInPrint).flatMap((record) => [
+        `${record.benefitPolicy} — ${record.carrier}`,
+        `${v2('claimContact')}: ${record.claimContact} | ${v2('submissionMethod')}: ${record.submissionMethod}`,
+        `☐ ${v2('claimOpened')}   ☐ ${v2('documentsSupplied')}   ☐ ${v2('approved')}   ☐ ${v2('paid')}   ☐ ${v2('closed')}`,
+        `${v2('notes')}: ________________________________________________________________`,
+      ]));
     });
   }, [database, dek]);
   const sectionTitles = useMemo(
@@ -121,6 +130,7 @@ export function BinderPreview({
           'incapacity',
           'deathCertificates',
           'estateAdministration',
+          'claimsBenefits',
           'first72',
           'doNot',
           'notify',
@@ -146,7 +156,7 @@ export function BinderPreview({
           'locations',
           'contacts',
           'review',
-        ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : key === 'deathCertificates' ? t('death_certificate_tracker.title', { ns: 'v2' }) : key === 'estateAdministration' ? t('estate_administration_tracker.title', { ns: 'v2' }) : t(`sectionNames.${key}`)]),
+        ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : key === 'deathCertificates' ? t('death_certificate_tracker.title', { ns: 'v2' }) : key === 'estateAdministration' ? t('estate_administration_tracker.title', { ns: 'v2' }) : key === 'claimsBenefits' ? t('claims_benefits_tracker.title', { ns: 'v2' }) : t(`sectionNames.${key}`)]),
       ),
     [t],
   );
@@ -156,9 +166,9 @@ export function BinderPreview({
         sectionTitles,
         choices,
         { cover: includeCover },
-        { letters: letterContent, incapacity: incapacityContent, deathCertificates: deathCertificateContent, estateAdministration: estateAdministrationContent },
+        { letters: letterContent, incapacity: incapacityContent, deathCertificates: deathCertificateContent, estateAdministration: estateAdministrationContent, claimsBenefits: claimsBenefitsContent },
       ),
-    [sectionTitles, choices, includeCover, letterContent, incapacityContent, deathCertificateContent, estateAdministrationContent],
+    [sectionTitles, choices, includeCover, letterContent, incapacityContent, deathCertificateContent, estateAdministrationContent, claimsBenefitsContent],
   );
   return (
     <section className={`section-page print-${pageSize}`}>

@@ -12,6 +12,7 @@ import { personalLetterSchema } from '../wishes/WishesLegacy';
 import { incapacityPlanSchema } from '../v2/IncapacityContinuityPlan';
 import { deathCertificateSchema } from '../v2/DeathCertificateTracker';
 import { estateAdministrationSchema } from '../v2/EstateAdministrationTracker';
+import { claimsBenefitsSchema } from '../v2/ClaimsBenefitsTracker';
 
 export function ReadableArchiveExport({
   database,
@@ -33,6 +34,7 @@ export function ReadableArchiveExport({
   const [incapacityContent, setIncapacityContent] = useState<string[]>([]);
   const [deathCertificateContent, setDeathCertificateContent] = useState<string[]>([]);
   const [estateAdministrationContent, setEstateAdministrationContent] = useState<string[]>([]);
+  const [claimsBenefitsContent, setClaimsBenefitsContent] = useState<string[]>([]);
   useEffect(() => {
     if (!database) return;
     void Promise.all([
@@ -52,7 +54,8 @@ export function ReadableArchiveExport({
       createEncryptedRepository(database, dek, 'IncapacityContinuityPlan', incapacityPlanSchema).list(),
       createEncryptedRepository(database, dek, 'DeathCertificateRecord', deathCertificateSchema).list(),
       createEncryptedRepository(database, dek, 'EstateAdministrationTask', estateAdministrationSchema).list(),
-    ]).then(([benefits, people, letters, plans, certificates, estateTasks]) => {
+      createEncryptedRepository(database, dek, 'ClaimsBenefitsRecord', claimsBenefitsSchema).list(),
+    ]).then(([benefits, people, letters, plans, certificates, estateTasks, claims]) => {
       const names = new Map(
         people.map((person) => [
           person.id,
@@ -105,6 +108,12 @@ export function ReadableArchiveExport({
         `- [ ] ${v2('notStarted')}   - [ ] ${v2('inProgress')}   - [ ] ${v2('completed')}   - [ ] ${v2('notApplicable')}`,
         `${v2('notes')}: ________________________________________________________________`,
       ]));
+      setClaimsBenefitsContent(claims.filter((record) => record.includeInReadableExport).flatMap((record) => [
+        `${record.benefitPolicy} — ${record.carrier}`,
+        `${v2('claimContact')}: ${record.claimContact} | ${v2('submissionMethod')}: ${record.submissionMethod}`,
+        `- [ ] ${v2('claimOpened')}   - [ ] ${v2('documentsSupplied')}   - [ ] ${v2('approved')}   - [ ] ${v2('paid')}   - [ ] ${v2('closed')}`,
+        `${v2('notes')}: ________________________________________________________________`,
+      ]));
     });
   }, [database, dek]);
   const exportArchive = async () => {
@@ -116,6 +125,7 @@ export function ReadableArchiveExport({
         'incapacity',
         'deathCertificates',
         'estateAdministration',
+        'claimsBenefits',
         'first72',
         'doNot',
         'notify',
@@ -141,7 +151,7 @@ export function ReadableArchiveExport({
         'locations',
         'contacts',
         'review',
-      ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : key === 'deathCertificates' ? t('death_certificate_tracker.title', { ns: 'v2' }) : key === 'estateAdministration' ? t('estate_administration_tracker.title', { ns: 'v2' }) : key]),
+      ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : key === 'deathCertificates' ? t('death_certificate_tracker.title', { ns: 'v2' }) : key === 'estateAdministration' ? t('estate_administration_tracker.title', { ns: 'v2' }) : key === 'claimsBenefits' ? t('claims_benefits_tracker.title', { ns: 'v2' }) : key]),
     );
     const blob = await exportReadableArchive(
       buildBinderDocument(
@@ -154,7 +164,7 @@ export function ReadableArchiveExport({
           digital: true,
         },
         {},
-        { insurance: insuranceContent, letters: letterContent, incapacity: incapacityContent, deathCertificates: deathCertificateContent, estateAdministration: estateAdministrationContent },
+        { insurance: insuranceContent, letters: letterContent, incapacity: incapacityContent, deathCertificates: deathCertificateContent, estateAdministration: estateAdministrationContent, claimsBenefits: claimsBenefitsContent },
       ),
       i18n.language,
       household,
