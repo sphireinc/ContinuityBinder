@@ -1,0 +1,37 @@
+import { expect, test } from '@playwright/test';
+import { statSync } from 'node:fs';
+
+test('prepares storage unit facts with blank survivor actions', async ({ page }) => {
+  await page.goto('/binder/setup');
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Begin Binder Setup' }).click();
+  await page.getByRole('textbox', { name: 'Passphrase', exact: true }).fill('a deliberately long passphrase');
+  await page.getByRole('textbox', { name: 'Confirm passphrase' }).fill('a deliberately long passphrase');
+  await page.getByRole('checkbox', { name: 'I understand that Continuity Binder cannot recover this passphrase.' }).check();
+  await page.getByRole('button', { name: 'Create encrypted binder' }).click();
+  await page.getByRole('link', { name: 'Storage Units / Offsite Storage' }).click();
+  await expect(page.getByText(/No storage units \/ offsite storage records/i)).toBeVisible();
+  await page.getByLabel('Facility').fill('Synthetic Storage');
+  await page.getByLabel('Address').fill('123 Example Road');
+  await page.getByRole('textbox', { name: 'Unit number', exact: true }).fill('A-42');
+  await page.getByRole('button', { name: 'Save record locally' }).click();
+  await expect(page.getByRole('status')).toContainText('Saved locally');
+  await expect(page.getByText(/Synthetic Storage — Hidden — Account holder/i)).toBeVisible();
+  await expect(page.getByText(/Facility contacted.*Access obtained.*Contents inventoried.*Unit closed\/continued/)).toBeVisible();
+  await page.getByRole('link', { name: 'Binder Preview' }).click();
+  const section = page.locator('.binder-section-storageUnits');
+  await expect(section).toContainText('Storage Units / Offsite Storage');
+  await expect(section).toContainText('☐ Facility contacted');
+  await expect(section.locator('.page-break')).toHaveCount(1);
+  await page.emulateMedia({ media: 'print' });
+  const letterPdf = test.info().outputPath('storage-units-letter.pdf');
+  await page.pdf({ format: 'Letter', printBackground: true, path: letterPdf });
+  expect(statSync(letterPdf).size).toBeGreaterThan(0);
+  await page.emulateMedia({ media: 'screen' });
+  await page.getByLabel('Page size').selectOption('a4');
+  await page.emulateMedia({ media: 'print' });
+  const a4Pdf = test.info().outputPath('storage-units-a4.pdf');
+  await page.pdf({ format: 'A4', printBackground: true, path: a4Pdf });
+  expect(statSync(a4Pdf).size).toBeGreaterThan(0);
+});

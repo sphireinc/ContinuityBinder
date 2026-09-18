@@ -48,6 +48,7 @@ export const DEFAULT_BINDER_ORDER = [
   'loyaltyRewards',
   'outstandingPurchases',
   'warrantyContracts',
+  'storageUnits',
   'first72',
   'doNot',
   'notify',

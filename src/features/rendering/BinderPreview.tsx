@@ -23,6 +23,7 @@ import { travelTimeshareSchema } from '../v2/TravelTimeshareVacationProperty';
 import { loyaltyPointsSchema } from '../v2/LoyaltyPointsRewards';
 import { outstandingPurchasesSchema } from '../v2/OutstandingPurchasesRefunds';
 import { warrantyServiceSchema } from '../v2/WarrantyServiceContracts';
+import { storageUnitSchema } from '../v2/StorageUnitsOffsiteStorage';
 
 export function BinderPreview({
   database,
@@ -80,6 +81,7 @@ export function BinderPreview({
   const [loyaltyRewardsContent, setLoyaltyRewardsContent] = useState<string[]>([]);
   const [outstandingPurchasesContent, setOutstandingPurchasesContent] = useState<string[]>([]);
   const [warrantyContractsContent, setWarrantyContractsContent] = useState<string[]>([]);
+  const [storageUnitsContent, setStorageUnitsContent] = useState<string[]>([]);
   useEffect(() => {
     if (!database || !dek) return;
     void Promise.all([
@@ -113,7 +115,8 @@ export function BinderPreview({
       createEncryptedRepository(database, dek, 'LoyaltyPointsRecord', loyaltyPointsSchema).list(),
       createEncryptedRepository(database, dek, 'OutstandingPurchaseRecord', outstandingPurchasesSchema).list(),
       createEncryptedRepository(database, dek, 'WarrantyServiceRecord', warrantyServiceSchema).list(),
-    ]).then(([letters, households, plans, people, certificates, estateTasks, claims, accountActions, licenses, militaryRecords, foreignRecords, travelRecords, loyaltyRecords, outstandingRecords, warrantyRecords]) => {
+      createEncryptedRepository(database, dek, 'StorageUnitRecord', storageUnitSchema).list(),
+    ]).then(([letters, households, plans, people, certificates, estateTasks, claims, accountActions, licenses, militaryRecords, foreignRecords, travelRecords, loyaltyRecords, outstandingRecords, warrantyRecords, storageRecords]) => {
       setLetterContent(
         letters
           .filter((letter) => letter.includePrint)
@@ -264,6 +267,21 @@ export function BinderPreview({
         `☐ ${t('warranty_service_contract_inventory.coverageVerified', { ns: 'v2' })}   ☐ ${t('warranty_service_contract_inventory.transferred', { ns: 'v2' })}   ☐ ${t('warranty_service_contract_inventory.claimOpened', { ns: 'v2' })}   ☐ ${t('warranty_service_contract_inventory.expiredClosed', { ns: 'v2' })}`,
         `${t('warranty_service_contract_inventory.date', { ns: 'v2' })}: ____ / ____ / ______    ${t('warranty_service_contract_inventory.initials', { ns: 'v2' })}: __________    ${t('warranty_service_contract_inventory.reference', { ns: 'v2' })}: __________`, `${t('warranty_service_contract_inventory.notes', { ns: 'v2' })}: ________________________________________________________________`,
       ]);
+      const storageContent = storageRecords.filter((record) => record.includeInPrint).flatMap((record) => [
+        'Continuity Binder', 'PROPERTY & HOUSEHOLD', t('storage_units_offsite_storage.title', { ns: 'v2' }), `${t('prepared', { ns: 'rendering' })}: ${new Date().toLocaleDateString()}`,
+        `${record.facility} — ${record.unitNumberPolicy === 'hidden' ? t('storage_units_offsite_storage.hidden', { ns: 'v2' }) : record.unitNumberPolicy === 'last4' ? `••••${record.unitNumber.slice(-4)}` : record.unitNumber}`,
+        `${t('storage_units_offsite_storage.address', { ns: 'v2' })}: ${record.address} | ${t('storage_units_offsite_storage.accountHolder', { ns: 'v2' })}: ${names.get(record.accountHolderId) ?? t('storage_units_offsite_storage.unknown', { ns: 'v2' })}`,
+        `${t('storage_units_offsite_storage.contentsSummary', { ns: 'v2' })}: ${record.contentsSummary}`,
+        `☐ ${t('storage_units_offsite_storage.facilityContacted', { ns: 'v2' })}   ☐ ${t('storage_units_offsite_storage.accessObtained', { ns: 'v2' })}   ☐ ${t('storage_units_offsite_storage.contentsInventoried', { ns: 'v2' })}   ☐ ${t('storage_units_offsite_storage.unitClosedContinued', { ns: 'v2' })}`,
+        `${t('storage_units_offsite_storage.date', { ns: 'v2' })}: ____ / ____ / ______    ${t('storage_units_offsite_storage.initials', { ns: 'v2' })}: __________    ${t('storage_units_offsite_storage.reference', { ns: 'v2' })}: __________`,
+        `${t('storage_units_offsite_storage.notes', { ns: 'v2' })}: ________________________________________________________________`,
+      ]);
+      setStorageUnitsContent(storageContent.length > 0 ? ['[PAGE_BREAK]', ...storageContent] : [
+        '[PAGE_BREAK]', 'Continuity Binder', 'PROPERTY & HOUSEHOLD', t('storage_units_offsite_storage.title', { ns: 'v2' }), `${t('prepared', { ns: 'rendering' })}: ${new Date().toLocaleDateString()}`,
+        t('storage_units_offsite_storage.intro', { ns: 'v2' }), t('storage_units_offsite_storage.caution', { ns: 'v2' }),
+        `☐ ${t('storage_units_offsite_storage.facilityContacted', { ns: 'v2' })}   ☐ ${t('storage_units_offsite_storage.accessObtained', { ns: 'v2' })}   ☐ ${t('storage_units_offsite_storage.contentsInventoried', { ns: 'v2' })}   ☐ ${t('storage_units_offsite_storage.unitClosedContinued', { ns: 'v2' })}`,
+        `${t('storage_units_offsite_storage.date', { ns: 'v2' })}: ____ / ____ / ______    ${t('storage_units_offsite_storage.initials', { ns: 'v2' })}: __________    ${t('storage_units_offsite_storage.reference', { ns: 'v2' })}: __________`, `${t('storage_units_offsite_storage.notes', { ns: 'v2' })}: ________________________________________________________________`,
+      ]);
     });
   }, [database, dek]);
   const sectionTitles = useMemo(
@@ -285,6 +303,7 @@ export function BinderPreview({
           'loyaltyRewards',
           'outstandingPurchases',
           'warrantyContracts',
+          'storageUnits',
           'first72',
           'doNot',
           'notify',
@@ -310,7 +329,7 @@ export function BinderPreview({
           'locations',
           'contacts',
           'review',
-        ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : key === 'deathCertificates' ? t('death_certificate_tracker.title', { ns: 'v2' }) : key === 'estateAdministration' ? t('estate_administration_tracker.title', { ns: 'v2' }) : key === 'claimsBenefits' ? t('claims_benefits_tracker.title', { ns: 'v2' }) : key === 'accountClosureTransfer' ? t('account_closure_transfer_tracker.title', { ns: 'v2' }) : key === 'governmentLicensing' ? t('government_licensing_records.title', { ns: 'v2' }) : key === 'militaryVeteran' ? t('military_veteran_record.title', { ns: 'v2' }) : key === 'foreignInternational' ? t('foreign_property_international_affairs.title', { ns: 'v2' }) : key === 'travelVacation' ? t('travel_timeshare_vacation_property.title', { ns: 'v2' }) : key === 'loyaltyRewards' ? t('loyalty_points_rewards.title', { ns: 'v2' }) : key === 'outstandingPurchases' ? t('outstanding_purchases_deposits_refunds.title', { ns: 'v2' }) : key === 'warrantyContracts' ? t('warranty_service_contract_inventory.title', { ns: 'v2' }) : t(`sectionNames.${key}`)]),
+        ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : key === 'deathCertificates' ? t('death_certificate_tracker.title', { ns: 'v2' }) : key === 'estateAdministration' ? t('estate_administration_tracker.title', { ns: 'v2' }) : key === 'claimsBenefits' ? t('claims_benefits_tracker.title', { ns: 'v2' }) : key === 'accountClosureTransfer' ? t('account_closure_transfer_tracker.title', { ns: 'v2' }) : key === 'governmentLicensing' ? t('government_licensing_records.title', { ns: 'v2' }) : key === 'militaryVeteran' ? t('military_veteran_record.title', { ns: 'v2' }) : key === 'foreignInternational' ? t('foreign_property_international_affairs.title', { ns: 'v2' }) : key === 'travelVacation' ? t('travel_timeshare_vacation_property.title', { ns: 'v2' }) : key === 'loyaltyRewards' ? t('loyalty_points_rewards.title', { ns: 'v2' }) : key === 'outstandingPurchases' ? t('outstanding_purchases_deposits_refunds.title', { ns: 'v2' }) : key === 'warrantyContracts' ? t('warranty_service_contract_inventory.title', { ns: 'v2' }) : key === 'storageUnits' ? t('storage_units_offsite_storage.title', { ns: 'v2' }) : t(`sectionNames.${key}`)]),
       ),
     [t],
   );
@@ -320,9 +339,9 @@ export function BinderPreview({
         sectionTitles,
         choices,
         { cover: includeCover },
-        { letters: letterContent, incapacity: incapacityContent, deathCertificates: deathCertificateContent, estateAdministration: estateAdministrationContent, claimsBenefits: claimsBenefitsContent, accountClosureTransfer: accountClosureTransferContent, governmentLicensing: governmentLicensingContent, militaryVeteran: militaryVeteranContent, foreignInternational: foreignInternationalContent, travelVacation: travelVacationContent, loyaltyRewards: loyaltyRewardsContent, outstandingPurchases: outstandingPurchasesContent, warrantyContracts: warrantyContractsContent },
+        { letters: letterContent, incapacity: incapacityContent, deathCertificates: deathCertificateContent, estateAdministration: estateAdministrationContent, claimsBenefits: claimsBenefitsContent, accountClosureTransfer: accountClosureTransferContent, governmentLicensing: governmentLicensingContent, militaryVeteran: militaryVeteranContent, foreignInternational: foreignInternationalContent, travelVacation: travelVacationContent, loyaltyRewards: loyaltyRewardsContent, outstandingPurchases: outstandingPurchasesContent, warrantyContracts: warrantyContractsContent, storageUnits: storageUnitsContent },
       ),
-    [sectionTitles, choices, includeCover, letterContent, incapacityContent, deathCertificateContent, estateAdministrationContent, claimsBenefitsContent, accountClosureTransferContent, governmentLicensingContent, militaryVeteranContent, foreignInternationalContent, travelVacationContent, loyaltyRewardsContent, outstandingPurchasesContent, warrantyContractsContent],
+    [sectionTitles, choices, includeCover, letterContent, incapacityContent, deathCertificateContent, estateAdministrationContent, claimsBenefitsContent, accountClosureTransferContent, governmentLicensingContent, militaryVeteranContent, foreignInternationalContent, travelVacationContent, loyaltyRewardsContent, outstandingPurchasesContent, warrantyContractsContent, storageUnitsContent],
   );
   return (
     <section className={`section-page print-${pageSize}`}>
