@@ -1,0 +1,37 @@
+import { expect, test } from '@playwright/test';
+import { statSync } from 'node:fs';
+
+test('prepares a warranty record with blank survivor actions', async ({ page }) => {
+  await page.goto('/binder/setup');
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Begin Binder Setup' }).click();
+  await page.getByRole('textbox', { name: 'Passphrase', exact: true }).fill('a deliberately long passphrase');
+  await page.getByRole('textbox', { name: 'Confirm passphrase' }).fill('a deliberately long passphrase');
+  await page.getByRole('checkbox', { name: 'I understand that Continuity Binder cannot recover this passphrase.' }).check();
+  await page.getByRole('button', { name: 'Create encrypted binder' }).click();
+  await page.getByRole('link', { name: 'Warranty & Service Contract Inventory' }).click();
+  await expect(page.getByText(/No warranty & service contract inventory records/i)).toBeVisible();
+  await page.getByLabel('Item/property').fill('Synthetic appliance');
+  await page.getByLabel('Provider').fill('Synthetic provider');
+  await page.getByLabel('Contract type').fill('Warranty');
+  await page.getByRole('button', { name: 'Save record locally' }).click();
+  await expect(page.getByRole('status')).toContainText('Saved locally');
+  await expect(page.getByText(/Synthetic appliance — Synthetic provider — Warranty/)).toBeVisible();
+  await expect(page.getByText(/Coverage verified.*Transferred.*Claim opened.*Expired\/closed/)).toBeVisible();
+  await page.getByRole('link', { name: 'Binder Preview' }).click();
+  const section = page.locator('.binder-section-warrantyContracts');
+  await expect(section).toContainText('Warranty & Service Contract Inventory');
+  await expect(section).toContainText('☐ Coverage verified');
+  await expect(section.locator('.page-break')).toHaveCount(1);
+  await page.emulateMedia({ media: 'print' });
+  const letterPdf = test.info().outputPath('warranty-service-letter.pdf');
+  await page.pdf({ format: 'Letter', printBackground: true, path: letterPdf });
+  expect(statSync(letterPdf).size).toBeGreaterThan(0);
+  await page.emulateMedia({ media: 'screen' });
+  await page.getByLabel('Page size').selectOption('a4');
+  await page.emulateMedia({ media: 'print' });
+  const a4Pdf = test.info().outputPath('warranty-service-a4.pdf');
+  await page.pdf({ format: 'A4', printBackground: true, path: a4Pdf });
+  expect(statSync(a4Pdf).size).toBeGreaterThan(0);
+});

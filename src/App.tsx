@@ -57,6 +57,7 @@ import { ForeignPropertyInternationalAffairs } from './features/v2/ForeignProper
 import { TravelTimeshareVacationProperty } from './features/v2/TravelTimeshareVacationProperty';
 import { LoyaltyPointsRewards } from './features/v2/LoyaltyPointsRewards';
 import { OutstandingPurchasesRefunds } from './features/v2/OutstandingPurchasesRefunds';
+import { WarrantyServiceContracts } from './features/v2/WarrantyServiceContracts';
 
 const navigation = [
   ['overview', 'overview'],
@@ -76,6 +77,7 @@ const navigation = [
   ['travelTimeshareVacationProperty', 'travel/vacation-assets'],
   ['loyaltyPointsRewards', 'money/loyalty'],
   ['outstandingPurchasesRefunds', 'money/outstanding-purchases'],
+  ['warrantyServiceContracts', 'property/warranties'],
   ['peopleContacts', 'people-contacts'],
   ['legalEstate', 'legal-estate'],
   ['moneyBenefits', 'money-benefits'],
@@ -746,6 +748,8 @@ export function App() {
                   <LoyaltyPointsRewards database={database} dek={dek!} />
                 ) : path === 'money/outstanding-purchases' ? (
                   <OutstandingPurchasesRefunds database={database} dek={dek!} />
+                ) : path === 'property/warranties' ? (
+                  <WarrantyServiceContracts database={database} dek={dek!} />
                 ) : path === 'legal-estate' ? (
                   <LegalEstate database={database} dek={dek!} />
                 ) : path === 'money-benefits' ? (

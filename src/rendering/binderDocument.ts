@@ -47,6 +47,7 @@ export const DEFAULT_BINDER_ORDER = [
   'travelVacation',
   'loyaltyRewards',
   'outstandingPurchases',
+  'warrantyContracts',
   'first72',
   'doNot',
   'notify',
