@@ -212,7 +212,6 @@ function Setup({
       <FirstRunEducation
         step={educationStep}
         onNext={() => setEducationStep((step) => step + 1)}
-        onSkip={() => setEducationStep(3)}
       />
     );
   return (

@@ -1,5 +1,5 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { act, fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 import { App } from './App';
 import { MemoryRouter } from 'react-router-dom';
 import './i18n/config';
@@ -55,11 +55,15 @@ describe('application baseline', () => {
   });
 
   it('shows the three required first-run education screens before setup', async () => {
+    vi.useFakeTimers();
     render(<MemoryRouter initialEntries={['/binder/setup']}><App /></MemoryRouter>);
     expect(screen.getByRole('heading', { name: 'This binder stays on this device.' })).toBeInTheDocument();
+    act(() => vi.advanceTimersByTime(5000));
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
     expect(screen.getByRole('heading', { name: 'Create a passphrase you can preserve safely.' })).toBeInTheDocument();
+    act(() => vi.advanceTimersByTime(5000));
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
     expect(screen.getByRole('heading', { name: 'Create encrypted backups regularly.' })).toBeInTheDocument();
+    vi.useRealTimers();
   });
 });
