@@ -50,6 +50,7 @@ export const DEFAULT_BINDER_ORDER = [
   'warrantyContracts',
   'storageUnits',
   'collections',
+  'doNotThrowAway',
   'first72',
   'doNot',
   'notify',

@@ -25,6 +25,7 @@ import { outstandingPurchasesSchema } from '../v2/OutstandingPurchasesRefunds';
 import { warrantyServiceSchema } from '../v2/WarrantyServiceContracts';
 import { storageUnitSchema } from '../v2/StorageUnitsOffsiteStorage';
 import { collectionSchema } from '../v2/CollectionsInventory';
+import { doNotThrowAwaySchema } from '../v2/DoNotThrowThisAwayList';
 
 export function BinderPreview({
   database,
@@ -84,6 +85,7 @@ export function BinderPreview({
   const [warrantyContractsContent, setWarrantyContractsContent] = useState<string[]>([]);
   const [storageUnitsContent, setStorageUnitsContent] = useState<string[]>([]);
   const [collectionsContent, setCollectionsContent] = useState<string[]>([]);
+  const [doNotThrowAwayContent, setDoNotThrowAwayContent] = useState<string[]>([]);
   useEffect(() => {
     if (!database || !dek) return;
     void Promise.all([
@@ -119,7 +121,8 @@ export function BinderPreview({
       createEncryptedRepository(database, dek, 'WarrantyServiceRecord', warrantyServiceSchema).list(),
       createEncryptedRepository(database, dek, 'StorageUnitRecord', storageUnitSchema).list(),
       createEncryptedRepository(database, dek, 'CollectionRecord', collectionSchema).list(),
-    ]).then(([letters, households, plans, people, certificates, estateTasks, claims, accountActions, licenses, militaryRecords, foreignRecords, travelRecords, loyaltyRecords, outstandingRecords, warrantyRecords, storageRecords, collectionRecords]) => {
+      createEncryptedRepository(database, dek, 'DoNotThrowAwayRecord', doNotThrowAwaySchema).list(),
+    ]).then(([letters, households, plans, people, certificates, estateTasks, claims, accountActions, licenses, militaryRecords, foreignRecords, travelRecords, loyaltyRecords, outstandingRecords, warrantyRecords, storageRecords, collectionRecords, doNotThrowAwayRecords]) => {
       setLetterContent(
         letters
           .filter((letter) => letter.includePrint)
@@ -301,6 +304,22 @@ export function BinderPreview({
         `☐ ${t('collections_inventory.specialistContacted', { ns: 'v2' })}   ☐ ${t('collections_inventory.catalogLocated', { ns: 'v2' })}   ☐ ${t('collections_inventory.valuationObtained', { ns: 'v2' })}`, t('collections_inventory.warning', { ns: 'v2' }),
         `${t('collections_inventory.date', { ns: 'v2' })}: ____ / ____ / ______    ${t('collections_inventory.initials', { ns: 'v2' })}: __________    ${t('collections_inventory.reference', { ns: 'v2' })}: __________`, `${t('collections_inventory.notes', { ns: 'v2' })}: ________________________________________________________________`,
       ]);
+      const doNotThrowAwayContent = doNotThrowAwayRecords.filter((record) => record.includeInPrint).flatMap((record) => [
+        'Continuity Binder', 'BINDER MANAGEMENT', t('do_not_throw_this_away_list.title', { ns: 'v2' }), `${t('prepared', { ns: 'rendering' })}: ${new Date().toLocaleDateString()}`,
+        `${record.item} — ${record.location} — ${names.get(record.ownerId) ?? t('do_not_throw_this_away_list.unknown', { ns: 'v2' })}`,
+        `${t('do_not_throw_this_away_list.whyItMatters', { ns: 'v2' })}: ${record.whyItMatters}`,
+        `${t('do_not_throw_this_away_list.relatedPersonBusiness', { ns: 'v2' })}: ${names.get(record.relatedPersonBusinessId) ?? t('do_not_throw_this_away_list.unknown', { ns: 'v2' })} | ${t('do_not_throw_this_away_list.whoShouldReview', { ns: 'v2' })}: ${names.get(record.whoShouldReviewId) ?? t('do_not_throw_this_away_list.unknown', { ns: 'v2' })}`,
+        `☐ ${t('do_not_throw_this_away_list.located', { ns: 'v2' })}   ☐ ${t('do_not_throw_this_away_list.reviewed', { ns: 'v2' })}   ☐ ${t('do_not_throw_this_away_list.safeToDispose', { ns: 'v2' })}`,
+        t('do_not_throw_this_away_list.warning', { ns: 'v2' }),
+        `${t('do_not_throw_this_away_list.date', { ns: 'v2' })}: ____ / ____ / ______    ${t('do_not_throw_this_away_list.initials', { ns: 'v2' })}: __________    ${t('do_not_throw_this_away_list.reference', { ns: 'v2' })}: __________`,
+        `${t('do_not_throw_this_away_list.notes', { ns: 'v2' })}: ________________________________________________________________`,
+      ]);
+      setDoNotThrowAwayContent(doNotThrowAwayContent.length > 0 ? ['[PAGE_BREAK]', ...doNotThrowAwayContent] : [
+        '[PAGE_BREAK]', 'Continuity Binder', 'BINDER MANAGEMENT', t('do_not_throw_this_away_list.title', { ns: 'v2' }), `${t('prepared', { ns: 'rendering' })}: ${new Date().toLocaleDateString()}`,
+        t('do_not_throw_this_away_list.intro', { ns: 'v2' }), t('do_not_throw_this_away_list.caution', { ns: 'v2' }),
+        `☐ ${t('do_not_throw_this_away_list.located', { ns: 'v2' })}   ☐ ${t('do_not_throw_this_away_list.reviewed', { ns: 'v2' })}   ☐ ${t('do_not_throw_this_away_list.safeToDispose', { ns: 'v2' })}`, t('do_not_throw_this_away_list.warning', { ns: 'v2' }),
+        `${t('do_not_throw_this_away_list.date', { ns: 'v2' })}: ____ / ____ / ______    ${t('do_not_throw_this_away_list.initials', { ns: 'v2' })}: __________    ${t('do_not_throw_this_away_list.reference', { ns: 'v2' })}: __________`, `${t('do_not_throw_this_away_list.notes', { ns: 'v2' })}: ________________________________________________________________`,
+      ]);
     });
   }, [database, dek]);
   const sectionTitles = useMemo(
@@ -324,6 +343,7 @@ export function BinderPreview({
           'warrantyContracts',
           'storageUnits',
           'collections',
+          'doNotThrowAway',
           'first72',
           'doNot',
           'notify',
@@ -349,7 +369,7 @@ export function BinderPreview({
           'locations',
           'contacts',
           'review',
-        ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : key === 'deathCertificates' ? t('death_certificate_tracker.title', { ns: 'v2' }) : key === 'estateAdministration' ? t('estate_administration_tracker.title', { ns: 'v2' }) : key === 'claimsBenefits' ? t('claims_benefits_tracker.title', { ns: 'v2' }) : key === 'accountClosureTransfer' ? t('account_closure_transfer_tracker.title', { ns: 'v2' }) : key === 'governmentLicensing' ? t('government_licensing_records.title', { ns: 'v2' }) : key === 'militaryVeteran' ? t('military_veteran_record.title', { ns: 'v2' }) : key === 'foreignInternational' ? t('foreign_property_international_affairs.title', { ns: 'v2' }) : key === 'travelVacation' ? t('travel_timeshare_vacation_property.title', { ns: 'v2' }) : key === 'loyaltyRewards' ? t('loyalty_points_rewards.title', { ns: 'v2' }) : key === 'outstandingPurchases' ? t('outstanding_purchases_deposits_refunds.title', { ns: 'v2' }) : key === 'warrantyContracts' ? t('warranty_service_contract_inventory.title', { ns: 'v2' }) : key === 'storageUnits' ? t('storage_units_offsite_storage.title', { ns: 'v2' }) : key === 'collections' ? t('collections_inventory.title', { ns: 'v2' }) : t(`sectionNames.${key}`)]),
+        ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : key === 'deathCertificates' ? t('death_certificate_tracker.title', { ns: 'v2' }) : key === 'estateAdministration' ? t('estate_administration_tracker.title', { ns: 'v2' }) : key === 'claimsBenefits' ? t('claims_benefits_tracker.title', { ns: 'v2' }) : key === 'accountClosureTransfer' ? t('account_closure_transfer_tracker.title', { ns: 'v2' }) : key === 'governmentLicensing' ? t('government_licensing_records.title', { ns: 'v2' }) : key === 'militaryVeteran' ? t('military_veteran_record.title', { ns: 'v2' }) : key === 'foreignInternational' ? t('foreign_property_international_affairs.title', { ns: 'v2' }) : key === 'travelVacation' ? t('travel_timeshare_vacation_property.title', { ns: 'v2' }) : key === 'loyaltyRewards' ? t('loyalty_points_rewards.title', { ns: 'v2' }) : key === 'outstandingPurchases' ? t('outstanding_purchases_deposits_refunds.title', { ns: 'v2' }) : key === 'warrantyContracts' ? t('warranty_service_contract_inventory.title', { ns: 'v2' }) : key === 'storageUnits' ? t('storage_units_offsite_storage.title', { ns: 'v2' }) : key === 'collections' ? t('collections_inventory.title', { ns: 'v2' }) : key === 'doNotThrowAway' ? t('do_not_throw_this_away_list.title', { ns: 'v2' }) : t(`sectionNames.${key}`)]),
       ),
     [t],
   );
@@ -359,9 +379,9 @@ export function BinderPreview({
         sectionTitles,
         choices,
         { cover: includeCover },
-        { letters: letterContent, incapacity: incapacityContent, deathCertificates: deathCertificateContent, estateAdministration: estateAdministrationContent, claimsBenefits: claimsBenefitsContent, accountClosureTransfer: accountClosureTransferContent, governmentLicensing: governmentLicensingContent, militaryVeteran: militaryVeteranContent, foreignInternational: foreignInternationalContent, travelVacation: travelVacationContent, loyaltyRewards: loyaltyRewardsContent, outstandingPurchases: outstandingPurchasesContent, warrantyContracts: warrantyContractsContent, storageUnits: storageUnitsContent, collections: collectionsContent },
+        { letters: letterContent, incapacity: incapacityContent, deathCertificates: deathCertificateContent, estateAdministration: estateAdministrationContent, claimsBenefits: claimsBenefitsContent, accountClosureTransfer: accountClosureTransferContent, governmentLicensing: governmentLicensingContent, militaryVeteran: militaryVeteranContent, foreignInternational: foreignInternationalContent, travelVacation: travelVacationContent, loyaltyRewards: loyaltyRewardsContent, outstandingPurchases: outstandingPurchasesContent, warrantyContracts: warrantyContractsContent, storageUnits: storageUnitsContent, collections: collectionsContent, doNotThrowAway: doNotThrowAwayContent },
       ),
-    [sectionTitles, choices, includeCover, letterContent, incapacityContent, deathCertificateContent, estateAdministrationContent, claimsBenefitsContent, accountClosureTransferContent, governmentLicensingContent, militaryVeteranContent, foreignInternationalContent, travelVacationContent, loyaltyRewardsContent, outstandingPurchasesContent, warrantyContractsContent, storageUnitsContent, collectionsContent],
+    [sectionTitles, choices, includeCover, letterContent, incapacityContent, deathCertificateContent, estateAdministrationContent, claimsBenefitsContent, accountClosureTransferContent, governmentLicensingContent, militaryVeteranContent, foreignInternationalContent, travelVacationContent, loyaltyRewardsContent, outstandingPurchasesContent, warrantyContractsContent, storageUnitsContent, collectionsContent, doNotThrowAwayContent],
   );
   return (
     <section className={`section-page print-${pageSize}`}>

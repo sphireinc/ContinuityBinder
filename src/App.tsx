@@ -60,6 +60,7 @@ import { OutstandingPurchasesRefunds } from './features/v2/OutstandingPurchasesR
 import { WarrantyServiceContracts } from './features/v2/WarrantyServiceContracts';
 import { StorageUnitsOffsiteStorage } from './features/v2/StorageUnitsOffsiteStorage';
 import { CollectionsInventory } from './features/v2/CollectionsInventory';
+import { DoNotThrowThisAwayList } from './features/v2/DoNotThrowThisAwayList';
 
 const navigation = [
   ['overview', 'overview'],
@@ -97,6 +98,7 @@ const navigation = [
   ['preview', 'preview'],
   ['export', 'export'],
   ['backupRestore', 'backup-restore'],
+  ['doNotThrowThisAway', 'manage/do-not-discard'],
   ['settings', 'settings/security'],
 ] as const;
 
@@ -730,6 +732,8 @@ export function App() {
                   />
                 ) : path === 'backup-restore' ? (
                   <EncryptedBackup database={database} />
+                ) : path === 'manage/do-not-discard' ? (
+                  <DoNotThrowThisAwayList database={database} dek={dek!} />
                 ) : path === 'immediate/incapacity' ? (
                   <IncapacityContinuityPlan database={database} dek={dek!} />
                 ) : path === 'immediate/death-certificates' ? (
