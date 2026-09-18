@@ -30,6 +30,7 @@ import { noValueDisposableSchema } from '../v2/NoValueDisposableList';
 import { personalPossessionStorySchema } from '../v2/PersonalPossessionsWithStories';
 import { familyRecipeTraditionSchema } from '../v2/FamilyRecipesTraditions';
 import { lifeStorySchema } from '../v2/LifeStoryPersonalHistory';
+import { photoVideoArchiveSchema } from '../v2/PhotoVideoArchiveMap';
 
 export function BinderPreview({
   database,
@@ -94,6 +95,7 @@ export function BinderPreview({
   const [personalStoriesContent, setPersonalStoriesContent] = useState<string[]>([]);
   const [recipesTraditionsContent, setRecipesTraditionsContent] = useState<string[]>([]);
   const [lifeStoryContent, setLifeStoryContent] = useState<string[]>([]);
+  const [photoVideoArchiveContent, setPhotoVideoArchiveContent] = useState<string[]>([]);
   useEffect(() => {
     if (!database || !dek) return;
     void Promise.all([
@@ -134,7 +136,8 @@ export function BinderPreview({
       createEncryptedRepository(database, dek, 'PersonalPossessionStoryRecord', personalPossessionStorySchema).list(),
       createEncryptedRepository(database, dek, 'FamilyRecipeTraditionRecord', familyRecipeTraditionSchema).list(),
       createEncryptedRepository(database, dek, 'LifeStoryRecord', lifeStorySchema).list(),
-    ]).then(([letters, households, plans, people, certificates, estateTasks, claims, accountActions, licenses, militaryRecords, foreignRecords, travelRecords, loyaltyRecords, outstandingRecords, warrantyRecords, storageRecords, collectionRecords, doNotThrowAwayRecords, noValueRecords, personalStoryRecords, recipeRecords, lifeStoryRecords]) => {
+      createEncryptedRepository(database, dek, 'PhotoVideoArchiveRecord', photoVideoArchiveSchema).list(),
+    ]).then(([letters, households, plans, people, certificates, estateTasks, claims, accountActions, licenses, militaryRecords, foreignRecords, travelRecords, loyaltyRecords, outstandingRecords, warrantyRecords, storageRecords, collectionRecords, doNotThrowAwayRecords, noValueRecords, personalStoryRecords, recipeRecords, lifeStoryRecords, photoVideoArchiveRecords]) => {
       setLetterContent(
         letters
           .filter((letter) => letter.includePrint)
@@ -406,6 +409,16 @@ export function BinderPreview({
         '[PAGE_BREAK]', 'Continuity Binder', 'WISHES & LEGACY', t('life_story_personal_history_questionnaire.title', { ns: 'v2' }), `${t('prepared', { ns: 'rendering' })}: ${new Date().toLocaleDateString()}`,
         t('life_story_personal_history_questionnaire.intro', { ns: 'v2' }), t('life_story_personal_history_questionnaire.caution', { ns: 'v2' }), `☐ ${t('life_story_personal_history_questionnaire.reviewedWithFamily', { ns: 'v2' })}   ☐ ${t('life_story_personal_history_questionnaire.additionsRecorded', { ns: 'v2' })}`, `${t('life_story_personal_history_questionnaire.date', { ns: 'v2' })}: ____ / ____ / ______    ${t('life_story_personal_history_questionnaire.initials', { ns: 'v2' })}: __________    ${t('life_story_personal_history_questionnaire.reference', { ns: 'v2' })}: __________`, `${t('life_story_personal_history_questionnaire.notes', { ns: 'v2' })}: ________________________________________________________________`, '_______________________________________________________________',
       ]);
+      const photoVideoArchiveContent = photoVideoArchiveRecords.filter((record) => record.includeInPrint).flatMap((record) => [
+        'Continuity Binder', 'DIGITAL & INTELLECTUAL PROPERTY', t('photo_video_archive_map.title', { ns: 'v2' }), `${t('prepared', { ns: 'rendering' })}: ${new Date().toLocaleDateString()}`,
+        `${t('photo_video_archive_map.collectionSource', { ns: 'v2' })}: ${record.collectionSource} | ${t('photo_video_archive_map.owner', { ns: 'v2' })}: ${names.get(record.ownerId) ?? t('photo_video_archive_map.unknown', { ns: 'v2' })}`,
+        `${t('photo_video_archive_map.serviceDevice', { ns: 'v2' })}: ${record.serviceDevice} | ${t('photo_video_archive_map.dateRange', { ns: 'v2' })}: ${record.dateRange} | ${t('photo_video_archive_map.approximateSize', { ns: 'v2' })}: ${record.approximateSize}`,
+        `${t('photo_video_archive_map.primaryLocation', { ns: 'v2' })}: ${record.primaryLocation} | ${t('photo_video_archive_map.backupLocation', { ns: 'v2' })}: ${record.backupLocation} | ${t('photo_video_archive_map.accessInstructionLocation', { ns: 'v2' })}: ${record.accessInstructionLocation}`,
+        `${t('photo_video_archive_map.irreplaceableNote', { ns: 'v2' })}: ${record.irreplaceableNote}`,
+        `☐ ${t('photo_video_archive_map.accessConfirmed', { ns: 'v2' })}   ☐ ${t('photo_video_archive_map.backupCreated', { ns: 'v2' })}   ☐ ${t('photo_video_archive_map.transferred', { ns: 'v2' })}`,
+        `${t('photo_video_archive_map.date', { ns: 'v2' })}: ____ / ____ / ______    ${t('photo_video_archive_map.initials', { ns: 'v2' })}: __________    ${t('photo_video_archive_map.reference', { ns: 'v2' })}: __________`, `${t('photo_video_archive_map.notes', { ns: 'v2' })}: ________________________________________________________________`, '_______________________________________________________________',
+      ]);
+      setPhotoVideoArchiveContent(photoVideoArchiveContent.length > 0 ? ['[PAGE_BREAK]', ...photoVideoArchiveContent] : ['[PAGE_BREAK]', 'Continuity Binder', 'DIGITAL & INTELLECTUAL PROPERTY', t('photo_video_archive_map.title', { ns: 'v2' }), `${t('prepared', { ns: 'rendering' })}: ${new Date().toLocaleDateString()}`, t('photo_video_archive_map.intro', { ns: 'v2' }), t('photo_video_archive_map.caution', { ns: 'v2' }), `☐ ${t('photo_video_archive_map.accessConfirmed', { ns: 'v2' })}   ☐ ${t('photo_video_archive_map.backupCreated', { ns: 'v2' })}   ☐ ${t('photo_video_archive_map.transferred', { ns: 'v2' })}`, `${t('photo_video_archive_map.date', { ns: 'v2' })}: ____ / ____ / ______    ${t('photo_video_archive_map.initials', { ns: 'v2' })}: __________    ${t('photo_video_archive_map.reference', { ns: 'v2' })}: __________`, `${t('photo_video_archive_map.notes', { ns: 'v2' })}: ________________________________________________________________`, '_______________________________________________________________']);
     });
   }, [database, dek]);
   const sectionTitles = useMemo(
@@ -434,6 +447,7 @@ export function BinderPreview({
           'personalStories',
           'recipesTraditions',
           'lifeStory',
+          'photoVideoArchive',
           'first72',
           'doNot',
           'notify',
@@ -459,7 +473,7 @@ export function BinderPreview({
           'locations',
           'contacts',
           'review',
-        ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : key === 'deathCertificates' ? t('death_certificate_tracker.title', { ns: 'v2' }) : key === 'estateAdministration' ? t('estate_administration_tracker.title', { ns: 'v2' }) : key === 'claimsBenefits' ? t('claims_benefits_tracker.title', { ns: 'v2' }) : key === 'accountClosureTransfer' ? t('account_closure_transfer_tracker.title', { ns: 'v2' }) : key === 'governmentLicensing' ? t('government_licensing_records.title', { ns: 'v2' }) : key === 'militaryVeteran' ? t('military_veteran_record.title', { ns: 'v2' }) : key === 'foreignInternational' ? t('foreign_property_international_affairs.title', { ns: 'v2' }) : key === 'travelVacation' ? t('travel_timeshare_vacation_property.title', { ns: 'v2' }) : key === 'loyaltyRewards' ? t('loyalty_points_rewards.title', { ns: 'v2' }) : key === 'outstandingPurchases' ? t('outstanding_purchases_deposits_refunds.title', { ns: 'v2' }) : key === 'warrantyContracts' ? t('warranty_service_contract_inventory.title', { ns: 'v2' }) : key === 'storageUnits' ? t('storage_units_offsite_storage.title', { ns: 'v2' }) : key === 'collections' ? t('collections_inventory.title', { ns: 'v2' }) : key === 'doNotThrowAway' ? t('do_not_throw_this_away_list.title', { ns: 'v2' }) : key === 'noValueDisposable' ? t('these_things_have_no_value_list.title', { ns: 'v2' }) : key === 'personalStories' ? t('personal_possessions_with_stories.title', { ns: 'v2' }) : key === 'recipesTraditions' ? t('family_recipes_traditions.title', { ns: 'v2' }) : key === 'lifeStory' ? t('life_story_personal_history_questionnaire.title', { ns: 'v2' }) : t(`sectionNames.${key}`)]),
+        ].map((key) => [key, key === 'photoVideoArchive' ? t('photo_video_archive_map.title', { ns: 'v2' }) : key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : key === 'deathCertificates' ? t('death_certificate_tracker.title', { ns: 'v2' }) : key === 'estateAdministration' ? t('estate_administration_tracker.title', { ns: 'v2' }) : key === 'claimsBenefits' ? t('claims_benefits_tracker.title', { ns: 'v2' }) : key === 'accountClosureTransfer' ? t('account_closure_transfer_tracker.title', { ns: 'v2' }) : key === 'governmentLicensing' ? t('government_licensing_records.title', { ns: 'v2' }) : key === 'militaryVeteran' ? t('military_veteran_record.title', { ns: 'v2' }) : key === 'foreignInternational' ? t('foreign_property_international_affairs.title', { ns: 'v2' }) : key === 'travelVacation' ? t('travel_timeshare_vacation_property.title', { ns: 'v2' }) : key === 'loyaltyRewards' ? t('loyalty_points_rewards.title', { ns: 'v2' }) : key === 'outstandingPurchases' ? t('outstanding_purchases_deposits_refunds.title', { ns: 'v2' }) : key === 'warrantyContracts' ? t('warranty_service_contract_inventory.title', { ns: 'v2' }) : key === 'storageUnits' ? t('storage_units_offsite_storage.title', { ns: 'v2' }) : key === 'collections' ? t('collections_inventory.title', { ns: 'v2' }) : key === 'doNotThrowAway' ? t('do_not_throw_this_away_list.title', { ns: 'v2' }) : key === 'noValueDisposable' ? t('these_things_have_no_value_list.title', { ns: 'v2' }) : key === 'personalStories' ? t('personal_possessions_with_stories.title', { ns: 'v2' }) : key === 'recipesTraditions' ? t('family_recipes_traditions.title', { ns: 'v2' }) : key === 'lifeStory' ? t('life_story_personal_history_questionnaire.title', { ns: 'v2' }) : t(`sectionNames.${key}`)]),
       ),
     [t],
   );
@@ -469,9 +483,9 @@ export function BinderPreview({
         sectionTitles,
         choices,
         { cover: includeCover },
-        { letters: letterContent, incapacity: incapacityContent, deathCertificates: deathCertificateContent, estateAdministration: estateAdministrationContent, claimsBenefits: claimsBenefitsContent, accountClosureTransfer: accountClosureTransferContent, governmentLicensing: governmentLicensingContent, militaryVeteran: militaryVeteranContent, foreignInternational: foreignInternationalContent, travelVacation: travelVacationContent, loyaltyRewards: loyaltyRewardsContent, outstandingPurchases: outstandingPurchasesContent, warrantyContracts: warrantyContractsContent, storageUnits: storageUnitsContent, collections: collectionsContent, doNotThrowAway: doNotThrowAwayContent, noValueDisposable: noValueDisposableContent, personalStories: personalStoriesContent, recipesTraditions: recipesTraditionsContent, lifeStory: lifeStoryContent },
+        { letters: letterContent, incapacity: incapacityContent, deathCertificates: deathCertificateContent, estateAdministration: estateAdministrationContent, claimsBenefits: claimsBenefitsContent, accountClosureTransfer: accountClosureTransferContent, governmentLicensing: governmentLicensingContent, militaryVeteran: militaryVeteranContent, foreignInternational: foreignInternationalContent, travelVacation: travelVacationContent, loyaltyRewards: loyaltyRewardsContent, outstandingPurchases: outstandingPurchasesContent, warrantyContracts: warrantyContractsContent, storageUnits: storageUnitsContent, collections: collectionsContent, doNotThrowAway: doNotThrowAwayContent, noValueDisposable: noValueDisposableContent, personalStories: personalStoriesContent, recipesTraditions: recipesTraditionsContent, lifeStory: lifeStoryContent, photoVideoArchive: photoVideoArchiveContent },
       ),
-    [sectionTitles, choices, includeCover, letterContent, incapacityContent, deathCertificateContent, estateAdministrationContent, claimsBenefitsContent, accountClosureTransferContent, governmentLicensingContent, militaryVeteranContent, foreignInternationalContent, travelVacationContent, loyaltyRewardsContent, outstandingPurchasesContent, warrantyContractsContent, storageUnitsContent, collectionsContent, doNotThrowAwayContent, noValueDisposableContent, personalStoriesContent, recipesTraditionsContent, lifeStoryContent],
+    [sectionTitles, choices, includeCover, letterContent, incapacityContent, deathCertificateContent, estateAdministrationContent, claimsBenefitsContent, accountClosureTransferContent, governmentLicensingContent, militaryVeteranContent, foreignInternationalContent, travelVacationContent, loyaltyRewardsContent, outstandingPurchasesContent, warrantyContractsContent, storageUnitsContent, collectionsContent, doNotThrowAwayContent, noValueDisposableContent, personalStoriesContent, recipesTraditionsContent, lifeStoryContent, photoVideoArchiveContent],
   );
   return (
     <section className={`section-page print-${pageSize}`}>

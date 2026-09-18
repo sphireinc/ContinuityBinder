@@ -65,6 +65,7 @@ import { NoValueDisposableList } from './features/v2/NoValueDisposableList';
 import { PersonalPossessionsWithStories } from './features/v2/PersonalPossessionsWithStories';
 import { FamilyRecipesTraditions } from './features/v2/FamilyRecipesTraditions';
 import { LifeStoryPersonalHistory } from './features/v2/LifeStoryPersonalHistory';
+import { PhotoVideoArchiveMap } from './features/v2/PhotoVideoArchiveMap';
 
 const navigation = [
   ['overview', 'overview'],
@@ -95,6 +96,7 @@ const navigation = [
   ['storageUnitsOffsiteStorage', 'property/storage-units'],
   ['businessEmployment', 'business-employment'],
   ['digitalAccess', 'digital-access'],
+  ['photoVideoArchiveMap', 'digital/media-map'],
   ['familyContinuity', 'family-continuity'],
   ['taxRecords', 'tax-records'],
   ['wishesLegacy', 'wishes-legacy'],
@@ -792,6 +794,8 @@ export function App() {
                   <BusinessEmployment database={database} dek={dek!} />
                 ) : path === 'digital-access' ? (
                   <DigitalAccess database={database} dek={dek!} />
+                ) : path === 'digital/media-map' ? (
+                  <PhotoVideoArchiveMap database={database} dek={dek!} />
                 ) : path === 'family-continuity' ? (
                   <>
                     <FamilyCare database={database} dek={dek!} />
