@@ -59,6 +59,7 @@ export const DEFAULT_BINDER_ORDER = [
   'backupStorage',
   'hardwareSecurityKeys',
   'cryptoDigitalAsset',
+  'aiOnlineServices',
   'first72',
   'doNot',
   'notify',
