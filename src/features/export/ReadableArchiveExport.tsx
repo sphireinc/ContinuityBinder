@@ -13,6 +13,7 @@ import { incapacityPlanSchema } from '../v2/IncapacityContinuityPlan';
 import { deathCertificateSchema } from '../v2/DeathCertificateTracker';
 import { estateAdministrationSchema } from '../v2/EstateAdministrationTracker';
 import { claimsBenefitsSchema } from '../v2/ClaimsBenefitsTracker';
+import { accountClosureTransferSchema } from '../v2/AccountClosureTransferTracker';
 
 export function ReadableArchiveExport({
   database,
@@ -35,6 +36,7 @@ export function ReadableArchiveExport({
   const [deathCertificateContent, setDeathCertificateContent] = useState<string[]>([]);
   const [estateAdministrationContent, setEstateAdministrationContent] = useState<string[]>([]);
   const [claimsBenefitsContent, setClaimsBenefitsContent] = useState<string[]>([]);
+  const [accountClosureTransferContent, setAccountClosureTransferContent] = useState<string[]>([]);
   useEffect(() => {
     if (!database) return;
     void Promise.all([
@@ -55,7 +57,8 @@ export function ReadableArchiveExport({
       createEncryptedRepository(database, dek, 'DeathCertificateRecord', deathCertificateSchema).list(),
       createEncryptedRepository(database, dek, 'EstateAdministrationTask', estateAdministrationSchema).list(),
       createEncryptedRepository(database, dek, 'ClaimsBenefitsRecord', claimsBenefitsSchema).list(),
-    ]).then(([benefits, people, letters, plans, certificates, estateTasks, claims]) => {
+      createEncryptedRepository(database, dek, 'AccountClosureTransferRecord', accountClosureTransferSchema).list(),
+    ]).then(([benefits, people, letters, plans, certificates, estateTasks, claims, accountActions]) => {
       const names = new Map(
         people.map((person) => [
           person.id,
@@ -114,6 +117,12 @@ export function ReadableArchiveExport({
         `- [ ] ${v2('claimOpened')}   - [ ] ${v2('documentsSupplied')}   - [ ] ${v2('approved')}   - [ ] ${v2('paid')}   - [ ] ${v2('closed')}`,
         `${v2('notes')}: ________________________________________________________________`,
       ]));
+      setAccountClosureTransferContent(accountActions.filter((record) => record.includeInReadableExport).flatMap((record) => [
+        `${record.accountReference} — ${record.institutionProvider} — ${record.ownerId ? names.get(record.ownerId) ?? record.ownerId : t('account_closure_transfer_tracker.ownerUnknown', { ns: 'v2' })}`,
+        `${t('account_closure_transfer_tracker.recommendedAction', { ns: 'v2' })}: ${record.recommendedAction} | ${t('account_closure_transfer_tracker.contact', { ns: 'v2' })}: ${record.contact}`,
+        `- [ ] ${t('account_closure_transfer_tracker.leaveActive', { ns: 'v2' })}   - [ ] ${t('account_closure_transfer_tracker.transfer', { ns: 'v2' })}   - [ ] ${t('account_closure_transfer_tracker.close', { ns: 'v2' })}   - [ ] ${t('account_closure_transfer_tracker.review', { ns: 'v2' })}   - [ ] ${t('account_closure_transfer_tracker.other', { ns: 'v2' })}`,
+        `${t('account_closure_transfer_tracker.completionDate', { ns: 'v2' })}: ____ / ____ / ______    ${t('account_closure_transfer_tracker.initials', { ns: 'v2' })}: __________    ${t('account_closure_transfer_tracker.confirmationNumber', { ns: 'v2' })}: __________`,
+      ]));
     });
   }, [database, dek]);
   const exportArchive = async () => {
@@ -126,6 +135,7 @@ export function ReadableArchiveExport({
         'deathCertificates',
         'estateAdministration',
         'claimsBenefits',
+        'accountClosureTransfer',
         'first72',
         'doNot',
         'notify',
@@ -151,7 +161,7 @@ export function ReadableArchiveExport({
         'locations',
         'contacts',
         'review',
-      ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : key === 'deathCertificates' ? t('death_certificate_tracker.title', { ns: 'v2' }) : key === 'estateAdministration' ? t('estate_administration_tracker.title', { ns: 'v2' }) : key === 'claimsBenefits' ? t('claims_benefits_tracker.title', { ns: 'v2' }) : key]),
+      ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : key === 'deathCertificates' ? t('death_certificate_tracker.title', { ns: 'v2' }) : key === 'estateAdministration' ? t('estate_administration_tracker.title', { ns: 'v2' }) : key === 'claimsBenefits' ? t('claims_benefits_tracker.title', { ns: 'v2' }) : key === 'accountClosureTransfer' ? t('account_closure_transfer_tracker.title', { ns: 'v2' }) : key]),
     );
     const blob = await exportReadableArchive(
       buildBinderDocument(
@@ -164,7 +174,7 @@ export function ReadableArchiveExport({
           digital: true,
         },
         {},
-        { insurance: insuranceContent, letters: letterContent, incapacity: incapacityContent, deathCertificates: deathCertificateContent, estateAdministration: estateAdministrationContent, claimsBenefits: claimsBenefitsContent },
+        { insurance: insuranceContent, letters: letterContent, incapacity: incapacityContent, deathCertificates: deathCertificateContent, estateAdministration: estateAdministrationContent, claimsBenefits: claimsBenefitsContent, accountClosureTransfer: accountClosureTransferContent },
       ),
       i18n.language,
       household,

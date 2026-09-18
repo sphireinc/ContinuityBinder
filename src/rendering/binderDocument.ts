@@ -40,6 +40,7 @@ export const DEFAULT_BINDER_ORDER = [
   'deathCertificates',
   'estateAdministration',
   'claimsBenefits',
+  'accountClosureTransfer',
   'first72',
   'doNot',
   'notify',

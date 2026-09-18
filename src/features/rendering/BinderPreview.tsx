@@ -15,6 +15,7 @@ import { incapacityPlanSchema } from '../v2/IncapacityContinuityPlan';
 import { deathCertificateSchema } from '../v2/DeathCertificateTracker';
 import { estateAdministrationSchema } from '../v2/EstateAdministrationTracker';
 import { claimsBenefitsSchema } from '../v2/ClaimsBenefitsTracker';
+import { accountClosureTransferSchema } from '../v2/AccountClosureTransferTracker';
 
 export function BinderPreview({
   database,
@@ -51,6 +52,7 @@ export function BinderPreview({
   const [deathCertificateContent, setDeathCertificateContent] = useState<string[]>([]);
   const [estateAdministrationContent, setEstateAdministrationContent] = useState<string[]>([]);
   const [claimsBenefitsContent, setClaimsBenefitsContent] = useState<string[]>([]);
+  const [accountClosureTransferContent, setAccountClosureTransferContent] = useState<string[]>([]);
   useEffect(() => {
     if (!database || !dek) return;
     void Promise.all([
@@ -76,7 +78,8 @@ export function BinderPreview({
       createEncryptedRepository(database, dek, 'DeathCertificateRecord', deathCertificateSchema).list(),
       createEncryptedRepository(database, dek, 'EstateAdministrationTask', estateAdministrationSchema).list(),
       createEncryptedRepository(database, dek, 'ClaimsBenefitsRecord', claimsBenefitsSchema).list(),
-    ]).then(([letters, households, plans, people, certificates, estateTasks, claims]) => {
+      createEncryptedRepository(database, dek, 'AccountClosureTransferRecord', accountClosureTransferSchema).list(),
+    ]).then(([letters, households, plans, people, certificates, estateTasks, claims, accountActions]) => {
       setLetterContent(
         letters
           .filter((letter) => letter.includePrint)
@@ -118,6 +121,12 @@ export function BinderPreview({
         `☐ ${v2('claimOpened')}   ☐ ${v2('documentsSupplied')}   ☐ ${v2('approved')}   ☐ ${v2('paid')}   ☐ ${v2('closed')}`,
         `${v2('notes')}: ________________________________________________________________`,
       ]));
+      setAccountClosureTransferContent(accountActions.filter((record) => record.includeInPrint).flatMap((record) => [
+        `${record.accountReference} — ${record.institutionProvider} — ${record.ownerId ? names.get(record.ownerId) ?? record.ownerId : t('account_closure_transfer_tracker.ownerUnknown', { ns: 'v2' })}`,
+        `${t('account_closure_transfer_tracker.recommendedAction', { ns: 'v2' })}: ${record.recommendedAction} | ${t('account_closure_transfer_tracker.contact', { ns: 'v2' })}: ${record.contact}`,
+        `☐ ${t('account_closure_transfer_tracker.leaveActive', { ns: 'v2' })}   ☐ ${t('account_closure_transfer_tracker.transfer', { ns: 'v2' })}   ☐ ${t('account_closure_transfer_tracker.close', { ns: 'v2' })}   ☐ ${t('account_closure_transfer_tracker.review', { ns: 'v2' })}   ☐ ${t('account_closure_transfer_tracker.other', { ns: 'v2' })}`,
+        `${t('account_closure_transfer_tracker.completionDate', { ns: 'v2' })}: ____ / ____ / ______    ${t('account_closure_transfer_tracker.initials', { ns: 'v2' })}: __________    ${t('account_closure_transfer_tracker.confirmationNumber', { ns: 'v2' })}: __________`,
+      ]));
     });
   }, [database, dek]);
   const sectionTitles = useMemo(
@@ -131,6 +140,7 @@ export function BinderPreview({
           'deathCertificates',
           'estateAdministration',
           'claimsBenefits',
+          'accountClosureTransfer',
           'first72',
           'doNot',
           'notify',
@@ -156,7 +166,7 @@ export function BinderPreview({
           'locations',
           'contacts',
           'review',
-        ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : key === 'deathCertificates' ? t('death_certificate_tracker.title', { ns: 'v2' }) : key === 'estateAdministration' ? t('estate_administration_tracker.title', { ns: 'v2' }) : key === 'claimsBenefits' ? t('claims_benefits_tracker.title', { ns: 'v2' }) : t(`sectionNames.${key}`)]),
+        ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : key === 'deathCertificates' ? t('death_certificate_tracker.title', { ns: 'v2' }) : key === 'estateAdministration' ? t('estate_administration_tracker.title', { ns: 'v2' }) : key === 'claimsBenefits' ? t('claims_benefits_tracker.title', { ns: 'v2' }) : key === 'accountClosureTransfer' ? t('account_closure_transfer_tracker.title', { ns: 'v2' }) : t(`sectionNames.${key}`)]),
       ),
     [t],
   );
@@ -166,9 +176,9 @@ export function BinderPreview({
         sectionTitles,
         choices,
         { cover: includeCover },
-        { letters: letterContent, incapacity: incapacityContent, deathCertificates: deathCertificateContent, estateAdministration: estateAdministrationContent, claimsBenefits: claimsBenefitsContent },
+        { letters: letterContent, incapacity: incapacityContent, deathCertificates: deathCertificateContent, estateAdministration: estateAdministrationContent, claimsBenefits: claimsBenefitsContent, accountClosureTransfer: accountClosureTransferContent },
       ),
-    [sectionTitles, choices, includeCover, letterContent, incapacityContent, deathCertificateContent, estateAdministrationContent, claimsBenefitsContent],
+    [sectionTitles, choices, includeCover, letterContent, incapacityContent, deathCertificateContent, estateAdministrationContent, claimsBenefitsContent, accountClosureTransferContent],
   );
   return (
     <section className={`section-page print-${pageSize}`}>
