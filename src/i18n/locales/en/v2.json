@@ -32,5 +32,34 @@
     "contactsReached": "Contacts reached",
     "billsReviewed": "Critical bills reviewed",
     "careActivated": "Care plan activated"
+  },
+  "death_certificate_tracker": {
+    "title": "Death Certificate Tracker",
+    "intro": "Track certified death-certificate copies and where each one is sent.",
+    "caution": "Keep the record factual and specific. Do not imply that this form creates legal authority or replaces professional documents.",
+    "empty": "No death certificate tracker records have been prepared yet. Add the information that would help another person understand what exists, who to contact, and what supporting records to locate.",
+    "add": "Add death certificate record",
+    "saved": "Saved locally",
+    "save": "Save record locally",
+    "summary": "Certificate records",
+    "deceased": "Deceased person",
+    "copiesOrdered": "Copies ordered",
+    "orderingOffice": "Ordering office",
+    "orderDate": "Order date",
+    "copiesReceived": "Copies received",
+    "institution": "Institution",
+    "copySent": "Copy sent",
+    "returnExpected": "Return expected",
+    "referenceNumber": "Reference number",
+    "notes": "Notes",
+    "paperActions": "Survivor paper actions",
+    "sent": "Sent",
+    "returned": "Returned",
+    "noReturnExpected": "No return expected",
+    "date": "Date",
+    "initials": "Initials",
+    "reference": "Reference"
+    ,"includeInPrint": "Include in printed binder",
+    "includeInReadableExport": "Include in readable export"
   }
 }

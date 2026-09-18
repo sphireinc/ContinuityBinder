@@ -12,6 +12,7 @@ import {
 import { personalLetterSchema } from '../wishes/WishesLegacy';
 import { householdSchema, personSchema } from '../household/HouseholdSetup';
 import { incapacityPlanSchema } from '../v2/IncapacityContinuityPlan';
+import { deathCertificateSchema } from '../v2/DeathCertificateTracker';
 
 export function BinderPreview({
   database,
@@ -45,6 +46,7 @@ export function BinderPreview({
   const [letterContent, setLetterContent] = useState<string[]>([]);
   const [householdName, setHouseholdName] = useState('');
   const [incapacityContent, setIncapacityContent] = useState<string[]>(emptyIncapacityContent);
+  const [deathCertificateContent, setDeathCertificateContent] = useState<string[]>([]);
   useEffect(() => {
     if (!database || !dek) return;
     void Promise.all([
@@ -67,7 +69,8 @@ export function BinderPreview({
         incapacityPlanSchema,
       ).list(),
       createEncryptedRepository(database, dek, 'Person', personSchema).list(),
-    ]).then(([letters, households, plans, people]) => {
+      createEncryptedRepository(database, dek, 'DeathCertificateRecord', deathCertificateSchema).list(),
+    ]).then(([letters, households, plans, people, certificates]) => {
       setLetterContent(
         letters
           .filter((letter) => letter.includePrint)
@@ -91,6 +94,12 @@ export function BinderPreview({
         'Date: ____ / ____ / ______    Initials: __________    Reference: __________',
       ]);
       setIncapacityContent(planContent.length > 0 ? planContent : emptyIncapacityContent);
+      setDeathCertificateContent(certificates.filter((record) => record.includeInPrint).flatMap((record) => [
+        `${names.get(record.deceasedPersonId) ?? v2('deceased')}: ${record.copiesOrdered}`,
+        `${v2('institution')}: ${record.institution} | ${v2('copySent')}: ${record.copySent}`,
+        `☐ ${v2('sent')}   ☐ ${v2('returned')}   ☐ ${v2('noReturnExpected')}`,
+        `${v2('notes')}: ________________________________________________________________`,
+      ]));
     });
   }, [database, dek]);
   const sectionTitles = useMemo(
@@ -101,6 +110,7 @@ export function BinderPreview({
           'notice',
           'start',
           'incapacity',
+          'deathCertificates',
           'first72',
           'doNot',
           'notify',
@@ -126,7 +136,7 @@ export function BinderPreview({
           'locations',
           'contacts',
           'review',
-        ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : t(`sectionNames.${key}`)]),
+        ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : key === 'deathCertificates' ? t('death_certificate_tracker.title', { ns: 'v2' }) : t(`sectionNames.${key}`)]),
       ),
     [t],
   );
@@ -136,9 +146,9 @@ export function BinderPreview({
         sectionTitles,
         choices,
         { cover: includeCover },
-        { letters: letterContent, incapacity: incapacityContent },
+        { letters: letterContent, incapacity: incapacityContent, deathCertificates: deathCertificateContent },
       ),
-    [sectionTitles, choices, includeCover, letterContent, incapacityContent],
+    [sectionTitles, choices, includeCover, letterContent, incapacityContent, deathCertificateContent],
   );
   return (
     <section className={`section-page print-${pageSize}`}>

@@ -32,5 +32,34 @@
     "contactsReached": "Contactos alcanzados",
     "billsReviewed": "Facturas críticas revisadas",
     "careActivated": "Plan de cuidado activado"
+  },
+  "death_certificate_tracker": {
+    "title": "Registro de certificados de defunción",
+    "intro": "Registra las copias certificadas del certificado de defunción y dónde se envía cada una.",
+    "caution": "Mantén el registro factual y específico. No sugieras que este formulario crea autoridad legal ni reemplaza documentos profesionales.",
+    "empty": "Todavía no se han preparado registros de certificados de defunción. Agrega la información que ayude a otra persona a entender qué existe, a quién contactar y dónde buscar los registros de apoyo.",
+    "add": "Agregar registro de certificado",
+    "saved": "Guardado localmente",
+    "save": "Guardar registro localmente",
+    "summary": "Registros de certificados",
+    "deceased": "Persona fallecida",
+    "copiesOrdered": "Copias solicitadas",
+    "orderingOffice": "Oficina que solicita",
+    "orderDate": "Fecha de solicitud",
+    "copiesReceived": "Copias recibidas",
+    "institution": "Institución",
+    "copySent": "Copia enviada",
+    "returnExpected": "Se espera devolución",
+    "referenceNumber": "Número de referencia",
+    "notes": "Notas",
+    "paperActions": "Acciones en papel para quien continúa",
+    "sent": "Enviada",
+    "returned": "Devuelta",
+    "noReturnExpected": "No se espera devolución",
+    "date": "Fecha",
+    "initials": "Iniciales",
+    "reference": "Referencia"
+    ,"includeInPrint": "Incluir en el binder impreso",
+    "includeInReadableExport": "Incluir en la exportación legible"
   }
 }

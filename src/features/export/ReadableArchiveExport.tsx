@@ -10,6 +10,7 @@ import { benefitRecordSchema } from '../insurance/InsuranceBenefits';
 import { personSchema } from '../household/HouseholdSetup';
 import { personalLetterSchema } from '../wishes/WishesLegacy';
 import { incapacityPlanSchema } from '../v2/IncapacityContinuityPlan';
+import { deathCertificateSchema } from '../v2/DeathCertificateTracker';
 
 export function ReadableArchiveExport({
   database,
@@ -29,6 +30,7 @@ export function ReadableArchiveExport({
   const [insuranceContent, setInsuranceContent] = useState<string[]>([]);
   const [letterContent, setLetterContent] = useState<string[]>([]);
   const [incapacityContent, setIncapacityContent] = useState<string[]>([]);
+  const [deathCertificateContent, setDeathCertificateContent] = useState<string[]>([]);
   useEffect(() => {
     if (!database) return;
     void Promise.all([
@@ -46,7 +48,8 @@ export function ReadableArchiveExport({
         personalLetterSchema,
       ).list(),
       createEncryptedRepository(database, dek, 'IncapacityContinuityPlan', incapacityPlanSchema).list(),
-    ]).then(([benefits, people, letters, plans]) => {
+      createEncryptedRepository(database, dek, 'DeathCertificateRecord', deathCertificateSchema).list(),
+    ]).then(([benefits, people, letters, plans, certificates]) => {
       const names = new Map(
         people.map((person) => [
           person.id,
@@ -87,6 +90,12 @@ export function ReadableArchiveExport({
         `${v2('preparerNotes')}: ________________________________________________________________`,
         'Date: ____ / ____ / ______    Initials: __________    Reference: __________',
       ]);
+      setDeathCertificateContent(certificates.filter((record) => record.includeInReadableExport).flatMap((record) => [
+        `${names.get(record.deceasedPersonId) ?? v2('deceased')}: ${record.copiesOrdered}`,
+        `${v2('institution')}: ${record.institution} | ${v2('copySent')}: ${record.copySent}`,
+        `- [ ] ${v2('sent')}   - [ ] ${v2('returned')}   - [ ] ${v2('noReturnExpected')}`,
+        `${v2('notes')}: ________________________________________________________________`,
+      ]));
     });
   }, [database, dek]);
   const exportArchive = async () => {
@@ -96,6 +105,7 @@ export function ReadableArchiveExport({
         'notice',
         'start',
         'incapacity',
+        'deathCertificates',
         'first72',
         'doNot',
         'notify',
@@ -121,7 +131,7 @@ export function ReadableArchiveExport({
         'locations',
         'contacts',
         'review',
-      ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : key]),
+      ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : key === 'deathCertificates' ? t('death_certificate_tracker.title', { ns: 'v2' }) : key]),
     );
     const blob = await exportReadableArchive(
       buildBinderDocument(
@@ -134,7 +144,7 @@ export function ReadableArchiveExport({
           digital: true,
         },
         {},
-        { insurance: insuranceContent, letters: letterContent, incapacity: incapacityContent },
+        { insurance: insuranceContent, letters: letterContent, incapacity: incapacityContent, deathCertificates: deathCertificateContent },
       ),
       i18n.language,
       household,
