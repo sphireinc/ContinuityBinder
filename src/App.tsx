@@ -66,6 +66,7 @@ import { PersonalPossessionsWithStories } from './features/v2/PersonalPossession
 import { FamilyRecipesTraditions } from './features/v2/FamilyRecipesTraditions';
 import { LifeStoryPersonalHistory } from './features/v2/LifeStoryPersonalHistory';
 import { PhotoVideoArchiveMap } from './features/v2/PhotoVideoArchiveMap';
+import { BackupStorageMap } from './features/v2/BackupStorageMap';
 
 const navigation = [
   ['overview', 'overview'],
@@ -97,6 +98,7 @@ const navigation = [
   ['businessEmployment', 'business-employment'],
   ['digitalAccess', 'digital-access'],
   ['photoVideoArchiveMap', 'digital/media-map'],
+  ['backupStorageMap', 'digital/backup-map'],
   ['familyContinuity', 'family-continuity'],
   ['taxRecords', 'tax-records'],
   ['wishesLegacy', 'wishes-legacy'],
@@ -796,6 +798,8 @@ export function App() {
                   <DigitalAccess database={database} dek={dek!} />
                 ) : path === 'digital/media-map' ? (
                   <PhotoVideoArchiveMap database={database} dek={dek!} />
+                ) : path === 'digital/backup-map' ? (
+                  <BackupStorageMap database={database} dek={dek!} />
                 ) : path === 'family-continuity' ? (
                   <>
                     <FamilyCare database={database} dek={dek!} />

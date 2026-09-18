@@ -56,6 +56,7 @@ export const DEFAULT_BINDER_ORDER = [
   'recipesTraditions',
   'lifeStory',
   'photoVideoArchive',
+  'backupStorage',
   'first72',
   'doNot',
   'notify',
