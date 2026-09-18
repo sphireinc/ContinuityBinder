@@ -110,5 +110,7 @@ p { line-height: 1.5; }
   .binder-section-accountClosureTransfer p { min-height: .28in; }
   .binder-section-governmentLicensing { break-before: page; }
   .binder-section-governmentLicensing p { min-height: .28in; }
+  .binder-section-militaryVeteran { break-before: page; }
+  .binder-section-militaryVeteran p { min-height: .28in; }
 }
 @media print { body.print-running .section-page > *:not(.running-schedule) { display: none !important; } body.print-running .running-schedule { display: block !important; } }

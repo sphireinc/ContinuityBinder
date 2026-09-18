@@ -52,6 +52,7 @@ import { EstateAdministrationTracker } from './features/v2/EstateAdministrationT
 import { ClaimsBenefitsTracker } from './features/v2/ClaimsBenefitsTracker';
 import { AccountClosureTransferTracker } from './features/v2/AccountClosureTransferTracker';
 import { GovernmentLicensingRecords } from './features/v2/GovernmentLicensingRecords';
+import { MilitaryVeteranRecord } from './features/v2/MilitaryVeteranRecord';
 
 const navigation = [
   ['overview', 'overview'],
@@ -66,6 +67,7 @@ const navigation = [
   ['claimsBenefitsTracker', 'immediate/claims-benefits'],
   ['accountClosureTransferTracker', 'immediate/account-actions'],
   ['governmentLicensingRecords', 'legal/licenses'],
+  ['militaryVeteranRecord', 'legal/military'],
   ['peopleContacts', 'people-contacts'],
   ['legalEstate', 'legal-estate'],
   ['moneyBenefits', 'money-benefits'],
@@ -727,6 +729,8 @@ export function App() {
                   <AccountClosureTransferTracker database={database} dek={dek!} />
                 ) : path === 'legal/licenses' ? (
                   <GovernmentLicensingRecords database={database} dek={dek!} />
+                ) : path === 'legal/military' ? (
+                  <MilitaryVeteranRecord database={database} dek={dek!} />
                 ) : path === 'legal-estate' ? (
                   <LegalEstate database={database} dek={dek!} />
                 ) : path === 'money-benefits' ? (

@@ -17,6 +17,7 @@ import { estateAdministrationSchema } from '../v2/EstateAdministrationTracker';
 import { claimsBenefitsSchema } from '../v2/ClaimsBenefitsTracker';
 import { accountClosureTransferSchema } from '../v2/AccountClosureTransferTracker';
 import { governmentLicensingSchema } from '../v2/GovernmentLicensingRecords';
+import { militaryVeteranSchema } from '../v2/MilitaryVeteranRecord';
 
 export function BinderPreview({
   database,
@@ -68,6 +69,7 @@ export function BinderPreview({
   const [claimsBenefitsContent, setClaimsBenefitsContent] = useState<string[]>([]);
   const [accountClosureTransferContent, setAccountClosureTransferContent] = useState<string[]>([]);
   const [governmentLicensingContent, setGovernmentLicensingContent] = useState<string[]>([]);
+  const [militaryVeteranContent, setMilitaryVeteranContent] = useState<string[]>([]);
   useEffect(() => {
     if (!database || !dek) return;
     void Promise.all([
@@ -95,7 +97,8 @@ export function BinderPreview({
       createEncryptedRepository(database, dek, 'ClaimsBenefitsRecord', claimsBenefitsSchema).list(),
       createEncryptedRepository(database, dek, 'AccountClosureTransferRecord', accountClosureTransferSchema).list(),
       createEncryptedRepository(database, dek, 'GovernmentLicensingRecord', governmentLicensingSchema).list(),
-    ]).then(([letters, households, plans, people, certificates, estateTasks, claims, accountActions, licenses]) => {
+      createEncryptedRepository(database, dek, 'MilitaryVeteranRecord', militaryVeteranSchema).list(),
+    ]).then(([letters, households, plans, people, certificates, estateTasks, claims, accountActions, licenses, militaryRecords]) => {
       setLetterContent(
         letters
           .filter((letter) => letter.includePrint)
@@ -162,6 +165,20 @@ export function BinderPreview({
         `☐ ${t('government_licensing_records.renew', { ns: 'v2' })}   ☐ ${t('government_licensing_records.cancel', { ns: 'v2' })}   ☐ ${t('government_licensing_records.transfer', { ns: 'v2' })}   ☐ ${t('government_licensing_records.preserve', { ns: 'v2' })}   ☐ ${t('government_licensing_records.review', { ns: 'v2' })}`,
         `${t('government_licensing_records.newExpiry', { ns: 'v2' })}: ____ / ____ / ______    ${t('government_licensing_records.reference', { ns: 'v2' })}: __________`, `${t('government_licensing_records.notes', { ns: 'v2' })}: ________________________________________________________________`,
       ]);
+      const militaryContent = militaryRecords.filter((record) => record.includeInPrint).flatMap((record) => [
+        'Continuity Binder', 'LEGAL, TAX & GOVERNMENT', t('military_veteran_record.title', { ns: 'v2' }), `${t('prepared', { ns: 'rendering' })}: ${new Date().toLocaleDateString()}`,
+        `${names.get(record.personId) ?? t('military_veteran_record.person', { ns: 'v2' })} — ${record.branch} — ${record.dischargeStatus}`,
+        `${t('military_veteran_record.dd214Location', { ns: 'v2' })}: ${record.dd214Location} | ${t('military_veteran_record.vaContact', { ns: 'v2' })}: ${record.vaContact}`,
+        `☐ ${t('military_veteran_record.dd214Located', { ns: 'v2' })}   ☐ ${t('military_veteran_record.vaContacted', { ns: 'v2' })}   ☐ ${t('military_veteran_record.honorsVerified', { ns: 'v2' })}`,
+        `${t('military_veteran_record.date', { ns: 'v2' })}: ____ / ____ / ______    ${t('military_veteran_record.initials', { ns: 'v2' })}: __________    ${t('military_veteran_record.reference', { ns: 'v2' })}: __________`,
+        `${t('military_veteran_record.notes', { ns: 'v2' })}: ________________________________________________________________`,
+      ]);
+      setMilitaryVeteranContent(militaryContent.length > 0 ? ['[PAGE_BREAK]', ...militaryContent] : [
+        '[PAGE_BREAK]', 'Continuity Binder', 'LEGAL, TAX & GOVERNMENT', t('military_veteran_record.title', { ns: 'v2' }), `${t('prepared', { ns: 'rendering' })}: ${new Date().toLocaleDateString()}`,
+        t('military_veteran_record.intro', { ns: 'v2' }), t('military_veteran_record.caution', { ns: 'v2' }),
+        `☐ ${t('military_veteran_record.dd214Located', { ns: 'v2' })}   ☐ ${t('military_veteran_record.vaContacted', { ns: 'v2' })}   ☐ ${t('military_veteran_record.honorsVerified', { ns: 'v2' })}`,
+        `${t('military_veteran_record.date', { ns: 'v2' })}: ____ / ____ / ______    ${t('military_veteran_record.initials', { ns: 'v2' })}: __________    ${t('military_veteran_record.reference', { ns: 'v2' })}: __________`, `${t('military_veteran_record.notes', { ns: 'v2' })}: ________________________________________________________________`,
+      ]);
     });
   }, [database, dek]);
   const sectionTitles = useMemo(
@@ -177,6 +194,7 @@ export function BinderPreview({
           'claimsBenefits',
           'accountClosureTransfer',
           'governmentLicensing',
+          'militaryVeteran',
           'first72',
           'doNot',
           'notify',
@@ -202,7 +220,7 @@ export function BinderPreview({
           'locations',
           'contacts',
           'review',
-        ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : key === 'deathCertificates' ? t('death_certificate_tracker.title', { ns: 'v2' }) : key === 'estateAdministration' ? t('estate_administration_tracker.title', { ns: 'v2' }) : key === 'claimsBenefits' ? t('claims_benefits_tracker.title', { ns: 'v2' }) : key === 'accountClosureTransfer' ? t('account_closure_transfer_tracker.title', { ns: 'v2' }) : key === 'governmentLicensing' ? t('government_licensing_records.title', { ns: 'v2' }) : t(`sectionNames.${key}`)]),
+        ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : key === 'deathCertificates' ? t('death_certificate_tracker.title', { ns: 'v2' }) : key === 'estateAdministration' ? t('estate_administration_tracker.title', { ns: 'v2' }) : key === 'claimsBenefits' ? t('claims_benefits_tracker.title', { ns: 'v2' }) : key === 'accountClosureTransfer' ? t('account_closure_transfer_tracker.title', { ns: 'v2' }) : key === 'governmentLicensing' ? t('government_licensing_records.title', { ns: 'v2' }) : key === 'militaryVeteran' ? t('military_veteran_record.title', { ns: 'v2' }) : t(`sectionNames.${key}`)]),
       ),
     [t],
   );
@@ -212,9 +230,9 @@ export function BinderPreview({
         sectionTitles,
         choices,
         { cover: includeCover },
-        { letters: letterContent, incapacity: incapacityContent, deathCertificates: deathCertificateContent, estateAdministration: estateAdministrationContent, claimsBenefits: claimsBenefitsContent, accountClosureTransfer: accountClosureTransferContent, governmentLicensing: governmentLicensingContent },
+        { letters: letterContent, incapacity: incapacityContent, deathCertificates: deathCertificateContent, estateAdministration: estateAdministrationContent, claimsBenefits: claimsBenefitsContent, accountClosureTransfer: accountClosureTransferContent, governmentLicensing: governmentLicensingContent, militaryVeteran: militaryVeteranContent },
       ),
-    [sectionTitles, choices, includeCover, letterContent, incapacityContent, deathCertificateContent, estateAdministrationContent, claimsBenefitsContent, accountClosureTransferContent, governmentLicensingContent],
+    [sectionTitles, choices, includeCover, letterContent, incapacityContent, deathCertificateContent, estateAdministrationContent, claimsBenefitsContent, accountClosureTransferContent, governmentLicensingContent, militaryVeteranContent],
   );
   return (
     <section className={`section-page print-${pageSize}`}>

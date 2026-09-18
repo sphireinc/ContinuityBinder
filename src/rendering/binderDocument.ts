@@ -42,6 +42,7 @@ export const DEFAULT_BINDER_ORDER = [
   'claimsBenefits',
   'accountClosureTransfer',
   'governmentLicensing',
+  'militaryVeteran',
   'first72',
   'doNot',
   'notify',
