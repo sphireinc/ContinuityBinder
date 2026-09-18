@@ -59,6 +59,7 @@ import { LoyaltyPointsRewards } from './features/v2/LoyaltyPointsRewards';
 import { OutstandingPurchasesRefunds } from './features/v2/OutstandingPurchasesRefunds';
 import { WarrantyServiceContracts } from './features/v2/WarrantyServiceContracts';
 import { StorageUnitsOffsiteStorage } from './features/v2/StorageUnitsOffsiteStorage';
+import { CollectionsInventory } from './features/v2/CollectionsInventory';
 
 const navigation = [
   ['overview', 'overview'],
@@ -85,6 +86,7 @@ const navigation = [
   ['bankingInvestments', 'banking-investments'],
   ['debtsObligations', 'debts-obligations'],
   ['property', 'property'],
+  ['collectionsInventory', 'property/collections'],
   ['storageUnitsOffsiteStorage', 'property/storage-units'],
   ['businessEmployment', 'business-employment'],
   ['digitalAccess', 'digital-access'],
@@ -754,6 +756,8 @@ export function App() {
                   <WarrantyServiceContracts database={database} dek={dek!} />
                 ) : path === 'property/storage-units' ? (
                   <StorageUnitsOffsiteStorage database={database} dek={dek!} />
+                ) : path === 'property/collections' ? (
+                  <CollectionsInventory database={database} dek={dek!} />
                 ) : path === 'legal-estate' ? (
                   <LegalEstate database={database} dek={dek!} />
                 ) : path === 'money-benefits' ? (
