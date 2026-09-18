@@ -53,6 +53,7 @@ export const DEFAULT_BINDER_ORDER = [
   'doNotThrowAway',
   'noValueDisposable',
   'personalStories',
+  'recipesTraditions',
   'first72',
   'doNot',
   'notify',

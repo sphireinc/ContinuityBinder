@@ -132,5 +132,7 @@ p { line-height: 1.5; }
   .binder-section-noValueDisposable p { min-height: .28in; }
   .binder-section-personalStories { break-before: page; }
   .binder-section-personalStories p { min-height: .28in; }
+  .binder-section-recipesTraditions { break-before: page; }
+  .binder-section-recipesTraditions p { min-height: .28in; }
 }
 @media print { body.print-running .section-page > *:not(.running-schedule) { display: none !important; } body.print-running .running-schedule { display: block !important; } }
