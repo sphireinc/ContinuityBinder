@@ -64,6 +64,7 @@ import { DoNotThrowThisAwayList } from './features/v2/DoNotThrowThisAwayList';
 import { NoValueDisposableList } from './features/v2/NoValueDisposableList';
 import { PersonalPossessionsWithStories } from './features/v2/PersonalPossessionsWithStories';
 import { FamilyRecipesTraditions } from './features/v2/FamilyRecipesTraditions';
+import { LifeStoryPersonalHistory } from './features/v2/LifeStoryPersonalHistory';
 
 const navigation = [
   ['overview', 'overview'],
@@ -99,6 +100,7 @@ const navigation = [
   ['wishesLegacy', 'wishes-legacy'],
   ['personalPossessionsWithStories', 'legacy/item-stories'],
   ['familyRecipesTraditions', 'legacy/recipes-traditions'],
+  ['lifeStoryPersonalHistory', 'legacy/life-story'],
   ['review', 'review'],
   ['preview', 'preview'],
   ['export', 'export'],
@@ -746,6 +748,8 @@ export function App() {
                   <PersonalPossessionsWithStories database={database} dek={dek!} />
                 ) : path === 'legacy/recipes-traditions' ? (
                   <FamilyRecipesTraditions database={database} dek={dek!} />
+                ) : path === 'legacy/life-story' ? (
+                  <LifeStoryPersonalHistory database={database} dek={dek!} />
                 ) : path === 'immediate/incapacity' ? (
                   <IncapacityContinuityPlan database={database} dek={dek!} />
                 ) : path === 'immediate/death-certificates' ? (

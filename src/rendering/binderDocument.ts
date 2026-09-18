@@ -54,6 +54,7 @@ export const DEFAULT_BINDER_ORDER = [
   'noValueDisposable',
   'personalStories',
   'recipesTraditions',
+  'lifeStory',
   'first72',
   'doNot',
   'notify',

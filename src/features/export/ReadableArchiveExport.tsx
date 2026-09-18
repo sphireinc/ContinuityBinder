@@ -27,6 +27,7 @@ import { doNotThrowAwaySchema } from '../v2/DoNotThrowThisAwayList';
 import { noValueDisposableSchema } from '../v2/NoValueDisposableList';
 import { personalPossessionStorySchema } from '../v2/PersonalPossessionsWithStories';
 import { familyRecipeTraditionSchema } from '../v2/FamilyRecipesTraditions';
+import { lifeStorySchema } from '../v2/LifeStoryPersonalHistory';
 
 export function ReadableArchiveExport({
   database,
@@ -63,6 +64,7 @@ export function ReadableArchiveExport({
   const [noValueDisposableContent, setNoValueDisposableContent] = useState<string[]>([]);
   const [personalStoriesContent, setPersonalStoriesContent] = useState<string[]>([]);
   const [recipesTraditionsContent, setRecipesTraditionsContent] = useState<string[]>([]);
+  const [lifeStoryContent, setLifeStoryContent] = useState<string[]>([]);
   useEffect(() => {
     if (!database) return;
     void Promise.all([
@@ -97,7 +99,8 @@ export function ReadableArchiveExport({
       createEncryptedRepository(database, dek, 'NoValueDisposableRecord', noValueDisposableSchema).list(),
       createEncryptedRepository(database, dek, 'PersonalPossessionStoryRecord', personalPossessionStorySchema).list(),
       createEncryptedRepository(database, dek, 'FamilyRecipeTraditionRecord', familyRecipeTraditionSchema).list(),
-    ]).then(([benefits, people, letters, plans, certificates, estateTasks, claims, accountActions, licenses, militaryRecords, foreignRecords, travelRecords, loyaltyRecords, outstandingRecords, warrantyRecords, storageRecords, collectionRecords, doNotThrowAwayRecords, noValueRecords, personalStoryRecords, recipeRecords]) => {
+      createEncryptedRepository(database, dek, 'LifeStoryRecord', lifeStorySchema).list(),
+    ]).then(([benefits, people, letters, plans, certificates, estateTasks, claims, accountActions, licenses, militaryRecords, foreignRecords, travelRecords, loyaltyRecords, outstandingRecords, warrantyRecords, storageRecords, collectionRecords, doNotThrowAwayRecords, noValueRecords, personalStoryRecords, recipeRecords, lifeStoryRecords]) => {
       const names = new Map(
         people.map((person) => [
           person.id,
@@ -369,6 +372,31 @@ export function ReadableArchiveExport({
         '[PAGE_BREAK]', 'Continuity Binder', 'WISHES & LEGACY', t('family_recipes_traditions.title', { ns: 'v2' }), `${t('prepared', { ns: 'rendering' })}: ${new Date().toLocaleDateString()}`,
         t('family_recipes_traditions.intro', { ns: 'v2' }), t('family_recipes_traditions.caution', { ns: 'v2' }), `${t('family_recipes_traditions.variations', { ns: 'v2' })}: ________________________________________________________________`, `${t('family_recipes_traditions.familyNotes', { ns: 'v2' })}: ________________________________________________________________`, '_______________________________________________________________',
       ]);
+      const lifeStoryContent = lifeStoryRecords.filter((record) => record.includeInReadableExport).flatMap((record) => [
+        'Continuity Binder', 'WISHES & LEGACY', t('life_story_personal_history_questionnaire.title', { ns: 'v2' }), `${t('prepared', { ns: 'rendering' })}: ${new Date().toLocaleDateString()}`,
+        `${t('life_story_personal_history_questionnaire.person', { ns: 'v2' })}: ${record.personId || t('life_story_personal_history_questionnaire.unknown', { ns: 'v2' })}`,
+        `${t('life_story_personal_history_questionnaire.childhood', { ns: 'v2' })}: ${record.childhood}`,
+        `${t('life_story_personal_history_questionnaire.parentsFamily', { ns: 'v2' })}: ${record.parentsFamily}`,
+        `${t('life_story_personal_history_questionnaire.placesLived', { ns: 'v2' })}: ${record.placesLived}`,
+        `${t('life_story_personal_history_questionnaire.education', { ns: 'v2' })}: ${record.education}`,
+        `${t('life_story_personal_history_questionnaire.career', { ns: 'v2' })}: ${record.career}`,
+        `${t('life_story_personal_history_questionnaire.service', { ns: 'v2' })}: ${record.service}`,
+        `${t('life_story_personal_history_questionnaire.relationships', { ns: 'v2' })}: ${record.relationships}`,
+        `${t('life_story_personal_history_questionnaire.children', { ns: 'v2' })}: ${record.children}`,
+        `${t('life_story_personal_history_questionnaire.turningPoints', { ns: 'v2' })}: ${record.turningPoints}`,
+        `${t('life_story_personal_history_questionnaire.proudestMoments', { ns: 'v2' })}: ${record.proudestMoments}`,
+        `${t('life_story_personal_history_questionnaire.lessons', { ns: 'v2' })}: ${record.lessons}`,
+        `${t('life_story_personal_history_questionnaire.favoriteMemories', { ns: 'v2' })}: ${record.favoriteMemories}`,
+        `${t('life_story_personal_history_questionnaire.values', { ns: 'v2' })}: ${record.values}`,
+        `${t('life_story_personal_history_questionnaire.messageToFamily', { ns: 'v2' })}: ${record.messageToFamily}`,
+        `- [ ] ${t('life_story_personal_history_questionnaire.reviewedWithFamily', { ns: 'v2' })}   - [ ] ${t('life_story_personal_history_questionnaire.additionsRecorded', { ns: 'v2' })}`,
+        `${t('life_story_personal_history_questionnaire.date', { ns: 'v2' })}: ____ / ____ / ______    ${t('life_story_personal_history_questionnaire.initials', { ns: 'v2' })}: __________    ${t('life_story_personal_history_questionnaire.reference', { ns: 'v2' })}: __________`,
+        `${t('life_story_personal_history_questionnaire.notes', { ns: 'v2' })}: ________________________________________________________________`, '_______________________________________________________________',
+      ]);
+      setLifeStoryContent(lifeStoryContent.length > 0 ? ['[PAGE_BREAK]', ...lifeStoryContent] : [
+        '[PAGE_BREAK]', 'Continuity Binder', 'WISHES & LEGACY', t('life_story_personal_history_questionnaire.title', { ns: 'v2' }), `${t('prepared', { ns: 'rendering' })}: ${new Date().toLocaleDateString()}`,
+        t('life_story_personal_history_questionnaire.intro', { ns: 'v2' }), t('life_story_personal_history_questionnaire.caution', { ns: 'v2' }), `- [ ] ${t('life_story_personal_history_questionnaire.reviewedWithFamily', { ns: 'v2' })}   - [ ] ${t('life_story_personal_history_questionnaire.additionsRecorded', { ns: 'v2' })}`, `${t('life_story_personal_history_questionnaire.date', { ns: 'v2' })}: ____ / ____ / ______    ${t('life_story_personal_history_questionnaire.initials', { ns: 'v2' })}: __________    ${t('life_story_personal_history_questionnaire.reference', { ns: 'v2' })}: __________`, `${t('life_story_personal_history_questionnaire.notes', { ns: 'v2' })}: ________________________________________________________________`, '_______________________________________________________________',
+      ]);
     });
   }, [database, dek]);
   const exportArchive = async () => {
@@ -395,6 +423,7 @@ export function ReadableArchiveExport({
         'noValueDisposable',
         'personalStories',
         'recipesTraditions',
+        'lifeStory',
         'first72',
         'doNot',
         'notify',
@@ -420,7 +449,7 @@ export function ReadableArchiveExport({
         'locations',
         'contacts',
         'review',
-      ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : key === 'deathCertificates' ? t('death_certificate_tracker.title', { ns: 'v2' }) : key === 'estateAdministration' ? t('estate_administration_tracker.title', { ns: 'v2' }) : key === 'claimsBenefits' ? t('claims_benefits_tracker.title', { ns: 'v2' }) : key === 'accountClosureTransfer' ? t('account_closure_transfer_tracker.title', { ns: 'v2' }) : key === 'governmentLicensing' ? t('government_licensing_records.title', { ns: 'v2' }) : key === 'militaryVeteran' ? t('military_veteran_record.title', { ns: 'v2' }) : key === 'foreignInternational' ? t('foreign_property_international_affairs.title', { ns: 'v2' }) : key === 'travelVacation' ? t('travel_timeshare_vacation_property.title', { ns: 'v2' }) : key === 'loyaltyRewards' ? t('loyalty_points_rewards.title', { ns: 'v2' }) : key === 'outstandingPurchases' ? t('outstanding_purchases_deposits_refunds.title', { ns: 'v2' }) : key === 'warrantyContracts' ? t('warranty_service_contract_inventory.title', { ns: 'v2' }) : key === 'storageUnits' ? t('storage_units_offsite_storage.title', { ns: 'v2' }) : key === 'collections' ? t('collections_inventory.title', { ns: 'v2' }) : key === 'doNotThrowAway' ? t('do_not_throw_this_away_list.title', { ns: 'v2' }) : key === 'noValueDisposable' ? t('these_things_have_no_value_list.title', { ns: 'v2' }) : key === 'personalStories' ? t('personal_possessions_with_stories.title', { ns: 'v2' }) : key === 'recipesTraditions' ? t('family_recipes_traditions.title', { ns: 'v2' }) : key]),
+      ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : key === 'deathCertificates' ? t('death_certificate_tracker.title', { ns: 'v2' }) : key === 'estateAdministration' ? t('estate_administration_tracker.title', { ns: 'v2' }) : key === 'claimsBenefits' ? t('claims_benefits_tracker.title', { ns: 'v2' }) : key === 'accountClosureTransfer' ? t('account_closure_transfer_tracker.title', { ns: 'v2' }) : key === 'governmentLicensing' ? t('government_licensing_records.title', { ns: 'v2' }) : key === 'militaryVeteran' ? t('military_veteran_record.title', { ns: 'v2' }) : key === 'foreignInternational' ? t('foreign_property_international_affairs.title', { ns: 'v2' }) : key === 'travelVacation' ? t('travel_timeshare_vacation_property.title', { ns: 'v2' }) : key === 'loyaltyRewards' ? t('loyalty_points_rewards.title', { ns: 'v2' }) : key === 'outstandingPurchases' ? t('outstanding_purchases_deposits_refunds.title', { ns: 'v2' }) : key === 'warrantyContracts' ? t('warranty_service_contract_inventory.title', { ns: 'v2' }) : key === 'storageUnits' ? t('storage_units_offsite_storage.title', { ns: 'v2' }) : key === 'collections' ? t('collections_inventory.title', { ns: 'v2' }) : key === 'doNotThrowAway' ? t('do_not_throw_this_away_list.title', { ns: 'v2' }) : key === 'noValueDisposable' ? t('these_things_have_no_value_list.title', { ns: 'v2' }) : key === 'personalStories' ? t('personal_possessions_with_stories.title', { ns: 'v2' }) : key === 'recipesTraditions' ? t('family_recipes_traditions.title', { ns: 'v2' }) : key === 'lifeStory' ? t('life_story_personal_history_questionnaire.title', { ns: 'v2' }) : key]),
     );
     const blob = await exportReadableArchive(
       buildBinderDocument(
@@ -433,7 +462,7 @@ export function ReadableArchiveExport({
           digital: true,
         },
         {},
-        { insurance: insuranceContent, letters: letterContent, incapacity: incapacityContent, deathCertificates: deathCertificateContent, estateAdministration: estateAdministrationContent, claimsBenefits: claimsBenefitsContent, accountClosureTransfer: accountClosureTransferContent, governmentLicensing: governmentLicensingContent, militaryVeteran: militaryVeteranContent, foreignInternational: foreignInternationalContent, travelVacation: travelVacationContent, loyaltyRewards: loyaltyRewardsContent, outstandingPurchases: outstandingPurchasesContent, warrantyContracts: warrantyContractsContent, storageUnits: storageUnitsContent, collections: collectionsContent, doNotThrowAway: doNotThrowAwayContent, noValueDisposable: noValueDisposableContent, personalStories: personalStoriesContent, recipesTraditions: recipesTraditionsContent },
+        { insurance: insuranceContent, letters: letterContent, incapacity: incapacityContent, deathCertificates: deathCertificateContent, estateAdministration: estateAdministrationContent, claimsBenefits: claimsBenefitsContent, accountClosureTransfer: accountClosureTransferContent, governmentLicensing: governmentLicensingContent, militaryVeteran: militaryVeteranContent, foreignInternational: foreignInternationalContent, travelVacation: travelVacationContent, loyaltyRewards: loyaltyRewardsContent, outstandingPurchases: outstandingPurchasesContent, warrantyContracts: warrantyContractsContent, storageUnits: storageUnitsContent, collections: collectionsContent, doNotThrowAway: doNotThrowAwayContent, noValueDisposable: noValueDisposableContent, personalStories: personalStoriesContent, recipesTraditions: recipesTraditionsContent, lifeStory: lifeStoryContent },
       ),
       i18n.language,
       household,
