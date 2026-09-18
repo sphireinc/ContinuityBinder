@@ -51,6 +51,7 @@ export const DEFAULT_BINDER_ORDER = [
   'storageUnits',
   'collections',
   'doNotThrowAway',
+  'noValueDisposable',
   'first72',
   'doNot',
   'notify',

@@ -128,5 +128,7 @@ p { line-height: 1.5; }
   .binder-section-collections p { min-height: .28in; }
   .binder-section-doNotThrowAway { break-before: page; }
   .binder-section-doNotThrowAway p { min-height: .28in; }
+  .binder-section-noValueDisposable { break-before: page; }
+  .binder-section-noValueDisposable p { min-height: .28in; }
 }
 @media print { body.print-running .section-page > *:not(.running-schedule) { display: none !important; } body.print-running .running-schedule { display: block !important; } }

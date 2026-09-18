@@ -24,6 +24,7 @@ import { warrantyServiceSchema } from '../v2/WarrantyServiceContracts';
 import { storageUnitSchema } from '../v2/StorageUnitsOffsiteStorage';
 import { collectionSchema } from '../v2/CollectionsInventory';
 import { doNotThrowAwaySchema } from '../v2/DoNotThrowThisAwayList';
+import { noValueDisposableSchema } from '../v2/NoValueDisposableList';
 
 export function ReadableArchiveExport({
   database,
@@ -57,6 +58,7 @@ export function ReadableArchiveExport({
   const [storageUnitsContent, setStorageUnitsContent] = useState<string[]>([]);
   const [collectionsContent, setCollectionsContent] = useState<string[]>([]);
   const [doNotThrowAwayContent, setDoNotThrowAwayContent] = useState<string[]>([]);
+  const [noValueDisposableContent, setNoValueDisposableContent] = useState<string[]>([]);
   useEffect(() => {
     if (!database) return;
     void Promise.all([
@@ -88,7 +90,8 @@ export function ReadableArchiveExport({
       createEncryptedRepository(database, dek, 'StorageUnitRecord', storageUnitSchema).list(),
       createEncryptedRepository(database, dek, 'CollectionRecord', collectionSchema).list(),
       createEncryptedRepository(database, dek, 'DoNotThrowAwayRecord', doNotThrowAwaySchema).list(),
-    ]).then(([benefits, people, letters, plans, certificates, estateTasks, claims, accountActions, licenses, militaryRecords, foreignRecords, travelRecords, loyaltyRecords, outstandingRecords, warrantyRecords, storageRecords, collectionRecords, doNotThrowAwayRecords]) => {
+      createEncryptedRepository(database, dek, 'NoValueDisposableRecord', noValueDisposableSchema).list(),
+    ]).then(([benefits, people, letters, plans, certificates, estateTasks, claims, accountActions, licenses, militaryRecords, foreignRecords, travelRecords, loyaltyRecords, outstandingRecords, warrantyRecords, storageRecords, collectionRecords, doNotThrowAwayRecords, noValueRecords]) => {
       const names = new Map(
         people.map((person) => [
           person.id,
@@ -311,6 +314,22 @@ export function ReadableArchiveExport({
         `- [ ] ${t('do_not_throw_this_away_list.located', { ns: 'v2' })}   - [ ] ${t('do_not_throw_this_away_list.reviewed', { ns: 'v2' })}   - [ ] ${t('do_not_throw_this_away_list.safeToDispose', { ns: 'v2' })}`, t('do_not_throw_this_away_list.warning', { ns: 'v2' }),
         `${t('do_not_throw_this_away_list.date', { ns: 'v2' })}: ____ / ____ / ______    ${t('do_not_throw_this_away_list.initials', { ns: 'v2' })}: __________    ${t('do_not_throw_this_away_list.reference', { ns: 'v2' })}: __________`, `${t('do_not_throw_this_away_list.notes', { ns: 'v2' })}: ________________________________________________________________`,
       ]);
+      const noValueContent = noValueRecords.filter((record) => record.includeInReadableExport).flatMap((record) => [
+        'Continuity Binder', 'BINDER MANAGEMENT', t('these_things_have_no_value_list.title', { ns: 'v2' }), `${t('prepared', { ns: 'rendering' })}: ${new Date().toLocaleDateString()}`,
+        `${record.itemCategory} — ${record.location}`,
+        `${t('these_things_have_no_value_list.reason', { ns: 'v2' })}: ${record.reason} | ${t('these_things_have_no_value_list.anyException', { ns: 'v2' })}: ${record.anyException}`,
+        `${t('these_things_have_no_value_list.whoShouldVerify', { ns: 'v2' })}: ${record.whoShouldVerifyId || t('these_things_have_no_value_list.unknown', { ns: 'v2' })}`,
+        `- [ ] ${t('these_things_have_no_value_list.reviewed', { ns: 'v2' })}   - [ ] ${t('these_things_have_no_value_list.disposedDonated', { ns: 'v2' })}`,
+        t('these_things_have_no_value_list.warning', { ns: 'v2' }),
+        `${t('these_things_have_no_value_list.date', { ns: 'v2' })}: ____ / ____ / ______    ${t('these_things_have_no_value_list.initials', { ns: 'v2' })}: __________    ${t('these_things_have_no_value_list.reference', { ns: 'v2' })}: __________`,
+        `${t('these_things_have_no_value_list.notes', { ns: 'v2' })}: ________________________________________________________________`,
+      ]);
+      setNoValueDisposableContent(noValueContent.length > 0 ? ['[PAGE_BREAK]', ...noValueContent] : [
+        '[PAGE_BREAK]', 'Continuity Binder', 'BINDER MANAGEMENT', t('these_things_have_no_value_list.title', { ns: 'v2' }), `${t('prepared', { ns: 'rendering' })}: ${new Date().toLocaleDateString()}`,
+        t('these_things_have_no_value_list.intro', { ns: 'v2' }), t('these_things_have_no_value_list.caution', { ns: 'v2' }),
+        `- [ ] ${t('these_things_have_no_value_list.reviewed', { ns: 'v2' })}   - [ ] ${t('these_things_have_no_value_list.disposedDonated', { ns: 'v2' })}`, t('these_things_have_no_value_list.warning', { ns: 'v2' }),
+        `${t('these_things_have_no_value_list.date', { ns: 'v2' })}: ____ / ____ / ______    ${t('these_things_have_no_value_list.initials', { ns: 'v2' })}: __________    ${t('these_things_have_no_value_list.reference', { ns: 'v2' })}: __________`, `${t('these_things_have_no_value_list.notes', { ns: 'v2' })}: ________________________________________________________________`,
+      ]);
     });
   }, [database, dek]);
   const exportArchive = async () => {
@@ -334,6 +353,7 @@ export function ReadableArchiveExport({
         'storageUnits',
         'collections',
         'doNotThrowAway',
+        'noValueDisposable',
         'first72',
         'doNot',
         'notify',
@@ -359,7 +379,7 @@ export function ReadableArchiveExport({
         'locations',
         'contacts',
         'review',
-      ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : key === 'deathCertificates' ? t('death_certificate_tracker.title', { ns: 'v2' }) : key === 'estateAdministration' ? t('estate_administration_tracker.title', { ns: 'v2' }) : key === 'claimsBenefits' ? t('claims_benefits_tracker.title', { ns: 'v2' }) : key === 'accountClosureTransfer' ? t('account_closure_transfer_tracker.title', { ns: 'v2' }) : key === 'governmentLicensing' ? t('government_licensing_records.title', { ns: 'v2' }) : key === 'militaryVeteran' ? t('military_veteran_record.title', { ns: 'v2' }) : key === 'foreignInternational' ? t('foreign_property_international_affairs.title', { ns: 'v2' }) : key === 'travelVacation' ? t('travel_timeshare_vacation_property.title', { ns: 'v2' }) : key === 'loyaltyRewards' ? t('loyalty_points_rewards.title', { ns: 'v2' }) : key === 'outstandingPurchases' ? t('outstanding_purchases_deposits_refunds.title', { ns: 'v2' }) : key === 'warrantyContracts' ? t('warranty_service_contract_inventory.title', { ns: 'v2' }) : key === 'storageUnits' ? t('storage_units_offsite_storage.title', { ns: 'v2' }) : key === 'collections' ? t('collections_inventory.title', { ns: 'v2' }) : key === 'doNotThrowAway' ? t('do_not_throw_this_away_list.title', { ns: 'v2' }) : key]),
+      ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : key === 'deathCertificates' ? t('death_certificate_tracker.title', { ns: 'v2' }) : key === 'estateAdministration' ? t('estate_administration_tracker.title', { ns: 'v2' }) : key === 'claimsBenefits' ? t('claims_benefits_tracker.title', { ns: 'v2' }) : key === 'accountClosureTransfer' ? t('account_closure_transfer_tracker.title', { ns: 'v2' }) : key === 'governmentLicensing' ? t('government_licensing_records.title', { ns: 'v2' }) : key === 'militaryVeteran' ? t('military_veteran_record.title', { ns: 'v2' }) : key === 'foreignInternational' ? t('foreign_property_international_affairs.title', { ns: 'v2' }) : key === 'travelVacation' ? t('travel_timeshare_vacation_property.title', { ns: 'v2' }) : key === 'loyaltyRewards' ? t('loyalty_points_rewards.title', { ns: 'v2' }) : key === 'outstandingPurchases' ? t('outstanding_purchases_deposits_refunds.title', { ns: 'v2' }) : key === 'warrantyContracts' ? t('warranty_service_contract_inventory.title', { ns: 'v2' }) : key === 'storageUnits' ? t('storage_units_offsite_storage.title', { ns: 'v2' }) : key === 'collections' ? t('collections_inventory.title', { ns: 'v2' }) : key === 'doNotThrowAway' ? t('do_not_throw_this_away_list.title', { ns: 'v2' }) : key === 'noValueDisposable' ? t('these_things_have_no_value_list.title', { ns: 'v2' }) : key]),
     );
     const blob = await exportReadableArchive(
       buildBinderDocument(
@@ -372,7 +392,7 @@ export function ReadableArchiveExport({
           digital: true,
         },
         {},
-        { insurance: insuranceContent, letters: letterContent, incapacity: incapacityContent, deathCertificates: deathCertificateContent, estateAdministration: estateAdministrationContent, claimsBenefits: claimsBenefitsContent, accountClosureTransfer: accountClosureTransferContent, governmentLicensing: governmentLicensingContent, militaryVeteran: militaryVeteranContent, foreignInternational: foreignInternationalContent, travelVacation: travelVacationContent, loyaltyRewards: loyaltyRewardsContent, outstandingPurchases: outstandingPurchasesContent, warrantyContracts: warrantyContractsContent, storageUnits: storageUnitsContent, collections: collectionsContent, doNotThrowAway: doNotThrowAwayContent },
+        { insurance: insuranceContent, letters: letterContent, incapacity: incapacityContent, deathCertificates: deathCertificateContent, estateAdministration: estateAdministrationContent, claimsBenefits: claimsBenefitsContent, accountClosureTransfer: accountClosureTransferContent, governmentLicensing: governmentLicensingContent, militaryVeteran: militaryVeteranContent, foreignInternational: foreignInternationalContent, travelVacation: travelVacationContent, loyaltyRewards: loyaltyRewardsContent, outstandingPurchases: outstandingPurchasesContent, warrantyContracts: warrantyContractsContent, storageUnits: storageUnitsContent, collections: collectionsContent, doNotThrowAway: doNotThrowAwayContent, noValueDisposable: noValueDisposableContent },
       ),
       i18n.language,
       household,

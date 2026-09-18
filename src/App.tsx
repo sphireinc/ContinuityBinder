@@ -61,6 +61,7 @@ import { WarrantyServiceContracts } from './features/v2/WarrantyServiceContracts
 import { StorageUnitsOffsiteStorage } from './features/v2/StorageUnitsOffsiteStorage';
 import { CollectionsInventory } from './features/v2/CollectionsInventory';
 import { DoNotThrowThisAwayList } from './features/v2/DoNotThrowThisAwayList';
+import { NoValueDisposableList } from './features/v2/NoValueDisposableList';
 
 const navigation = [
   ['overview', 'overview'],
@@ -99,6 +100,7 @@ const navigation = [
   ['export', 'export'],
   ['backupRestore', 'backup-restore'],
   ['doNotThrowThisAway', 'manage/do-not-discard'],
+  ['theseThingsHaveNoValue', 'manage/disposable'],
   ['settings', 'settings/security'],
 ] as const;
 
@@ -734,6 +736,8 @@ export function App() {
                   <EncryptedBackup database={database} />
                 ) : path === 'manage/do-not-discard' ? (
                   <DoNotThrowThisAwayList database={database} dek={dek!} />
+                ) : path === 'manage/disposable' ? (
+                  <NoValueDisposableList database={database} dek={dek!} />
                 ) : path === 'immediate/incapacity' ? (
                   <IncapacityContinuityPlan database={database} dek={dek!} />
                 ) : path === 'immediate/death-certificates' ? (
