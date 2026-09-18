@@ -52,6 +52,7 @@ export const DEFAULT_BINDER_ORDER = [
   'collections',
   'doNotThrowAway',
   'noValueDisposable',
+  'personalStories',
   'first72',
   'doNot',
   'notify',

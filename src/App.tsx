@@ -62,6 +62,7 @@ import { StorageUnitsOffsiteStorage } from './features/v2/StorageUnitsOffsiteSto
 import { CollectionsInventory } from './features/v2/CollectionsInventory';
 import { DoNotThrowThisAwayList } from './features/v2/DoNotThrowThisAwayList';
 import { NoValueDisposableList } from './features/v2/NoValueDisposableList';
+import { PersonalPossessionsWithStories } from './features/v2/PersonalPossessionsWithStories';
 
 const navigation = [
   ['overview', 'overview'],
@@ -95,6 +96,7 @@ const navigation = [
   ['familyContinuity', 'family-continuity'],
   ['taxRecords', 'tax-records'],
   ['wishesLegacy', 'wishes-legacy'],
+  ['personalPossessionsWithStories', 'legacy/item-stories'],
   ['review', 'review'],
   ['preview', 'preview'],
   ['export', 'export'],
@@ -738,6 +740,8 @@ export function App() {
                   <DoNotThrowThisAwayList database={database} dek={dek!} />
                 ) : path === 'manage/disposable' ? (
                   <NoValueDisposableList database={database} dek={dek!} />
+                ) : path === 'legacy/item-stories' ? (
+                  <PersonalPossessionsWithStories database={database} dek={dek!} />
                 ) : path === 'immediate/incapacity' ? (
                   <IncapacityContinuityPlan database={database} dek={dek!} />
                 ) : path === 'immediate/death-certificates' ? (
