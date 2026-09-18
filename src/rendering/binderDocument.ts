@@ -45,6 +45,7 @@ export const DEFAULT_BINDER_ORDER = [
   'militaryVeteran',
   'foreignInternational',
   'travelVacation',
+  'loyaltyRewards',
   'first72',
   'doNot',
   'notify',

@@ -116,5 +116,7 @@ p { line-height: 1.5; }
   .binder-section-foreignInternational p { min-height: .28in; }
   .binder-section-travelVacation { break-before: page; }
   .binder-section-travelVacation p { min-height: .28in; }
+  .binder-section-loyaltyRewards { break-before: page; }
+  .binder-section-loyaltyRewards p { min-height: .28in; }
 }
 @media print { body.print-running .section-page > *:not(.running-schedule) { display: none !important; } body.print-running .running-schedule { display: block !important; } }

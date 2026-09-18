@@ -55,6 +55,7 @@ import { GovernmentLicensingRecords } from './features/v2/GovernmentLicensingRec
 import { MilitaryVeteranRecord } from './features/v2/MilitaryVeteranRecord';
 import { ForeignPropertyInternationalAffairs } from './features/v2/ForeignPropertyInternationalAffairs';
 import { TravelTimeshareVacationProperty } from './features/v2/TravelTimeshareVacationProperty';
+import { LoyaltyPointsRewards } from './features/v2/LoyaltyPointsRewards';
 
 const navigation = [
   ['overview', 'overview'],
@@ -72,6 +73,7 @@ const navigation = [
   ['militaryVeteranRecord', 'legal/military'],
   ['foreignPropertyInternationalAffairs', 'legal/international'],
   ['travelTimeshareVacationProperty', 'travel/vacation-assets'],
+  ['loyaltyPointsRewards', 'money/loyalty'],
   ['peopleContacts', 'people-contacts'],
   ['legalEstate', 'legal-estate'],
   ['moneyBenefits', 'money-benefits'],
@@ -739,6 +741,8 @@ export function App() {
                   <ForeignPropertyInternationalAffairs database={database} dek={dek!} />
                 ) : path === 'travel/vacation-assets' ? (
                   <TravelTimeshareVacationProperty database={database} dek={dek!} />
+                ) : path === 'money/loyalty' ? (
+                  <LoyaltyPointsRewards database={database} dek={dek!} />
                 ) : path === 'legal-estate' ? (
                   <LegalEstate database={database} dek={dek!} />
                 ) : path === 'money-benefits' ? (
