@@ -61,5 +61,34 @@
     "reference": "Reference"
     ,"includeInPrint": "Include in printed binder",
     "includeInReadableExport": "Include in readable export"
+  },
+  "estate_administration_tracker": {
+    "title": "Estate Administration Tracker",
+    "intro": "Organize estate-administration work without presenting jurisdiction-specific legal advice.",
+    "caution": "Keep the record factual and specific. Do not imply that this form creates legal authority or replaces professional documents.",
+    "empty": "No estate administration tracker records have been prepared yet. Add the information that would help another person understand what exists, who to contact, and what supporting records to locate.",
+    "add": "Add estate administration task",
+    "saved": "Saved locally",
+    "save": "Save task locally",
+    "summary": "Estate tasks",
+    "deceased": "Deceased person",
+    "representative": "Executor/personal representative",
+    "attorney": "Attorney",
+    "courtAgency": "Court/agency",
+    "caseReference": "Case/reference",
+    "task": "Task",
+    "responsiblePerson": "Responsible person",
+    "supportingDocument": "Supporting document",
+    "targetTiming": "Target timing",
+    "notes": "Notes",
+    "includeInPrint": "Include in printed binder",
+    "includeInReadableExport": "Include in readable export",
+    "paperActions": "Survivor paper actions",
+    "notStarted": "Not started",
+    "inProgress": "In progress",
+    "completed": "Completed",
+    "notApplicable": "N/A",
+    "date": "Date",
+    "initials": "Initials"
   }
 }

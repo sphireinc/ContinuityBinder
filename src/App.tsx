@@ -48,6 +48,7 @@ import { FirstRunEducation } from './features/education/FirstRunEducation';
 import { migrateAfterUnlock } from './data/migrations';
 import { IncapacityContinuityPlan } from './features/v2/IncapacityContinuityPlan';
 import { DeathCertificateTracker } from './features/v2/DeathCertificateTracker';
+import { EstateAdministrationTracker } from './features/v2/EstateAdministrationTracker';
 
 const navigation = [
   ['overview', 'overview'],
@@ -58,6 +59,7 @@ const navigation = [
   ['peopleToNotify', 'people-to-notify'],
   ['incapacityContinuityPlan', 'immediate/incapacity'],
   ['deathCertificateTracker', 'immediate/death-certificates'],
+  ['estateAdministrationTracker', 'immediate/estate-administration'],
   ['peopleContacts', 'people-contacts'],
   ['legalEstate', 'legal-estate'],
   ['moneyBenefits', 'money-benefits'],
@@ -711,6 +713,8 @@ export function App() {
                   <IncapacityContinuityPlan database={database} dek={dek!} />
                 ) : path === 'immediate/death-certificates' ? (
                   <DeathCertificateTracker database={database} dek={dek!} />
+                ) : path === 'immediate/estate-administration' ? (
+                  <EstateAdministrationTracker database={database} dek={dek!} />
                 ) : path === 'legal-estate' ? (
                   <LegalEstate database={database} dek={dek!} />
                 ) : path === 'money-benefits' ? (

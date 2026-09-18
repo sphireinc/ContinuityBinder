@@ -61,5 +61,34 @@
     "reference": "Referencia"
     ,"includeInPrint": "Incluir en el binder impreso",
     "includeInReadableExport": "Incluir en la exportación legible"
+  },
+  "estate_administration_tracker": {
+    "title": "Registro de administración de la herencia",
+    "intro": "Organiza el trabajo de administración de la herencia sin presentar asesoría legal específica de una jurisdicción.",
+    "caution": "Mantén el registro factual y específico. No sugieras que este formulario crea autoridad legal ni reemplaza documentos profesionales.",
+    "empty": "Todavía no se han preparado tareas de administración de la herencia. Agrega la información que ayude a otra persona a entender qué existe, a quién contactar y dónde buscar los registros de apoyo.",
+    "add": "Agregar tarea de administración",
+    "saved": "Guardado localmente",
+    "save": "Guardar tarea localmente",
+    "summary": "Tareas de la herencia",
+    "deceased": "Persona fallecida",
+    "representative": "Albacea o representante personal",
+    "attorney": "Abogado",
+    "courtAgency": "Tribunal o agencia",
+    "caseReference": "Caso o referencia",
+    "task": "Tarea",
+    "responsiblePerson": "Persona responsable",
+    "supportingDocument": "Documento de apoyo",
+    "targetTiming": "Fecha objetivo",
+    "notes": "Notas",
+    "includeInPrint": "Incluir en el binder impreso",
+    "includeInReadableExport": "Incluir en la exportación legible",
+    "paperActions": "Acciones en papel para quien continúa",
+    "notStarted": "No iniciada",
+    "inProgress": "En progreso",
+    "completed": "Completada",
+    "notApplicable": "No aplica",
+    "date": "Fecha",
+    "initials": "Iniciales"
   }
 }
