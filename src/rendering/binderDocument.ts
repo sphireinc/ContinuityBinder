@@ -41,6 +41,7 @@ export const DEFAULT_BINDER_ORDER = [
   'estateAdministration',
   'claimsBenefits',
   'accountClosureTransfer',
+  'governmentLicensing',
   'first72',
   'doNot',
   'notify',

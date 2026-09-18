@@ -16,6 +16,7 @@ import { deathCertificateSchema } from '../v2/DeathCertificateTracker';
 import { estateAdministrationSchema } from '../v2/EstateAdministrationTracker';
 import { claimsBenefitsSchema } from '../v2/ClaimsBenefitsTracker';
 import { accountClosureTransferSchema } from '../v2/AccountClosureTransferTracker';
+import { governmentLicensingSchema } from '../v2/GovernmentLicensingRecords';
 
 export function BinderPreview({
   database,
@@ -66,6 +67,7 @@ export function BinderPreview({
   const [estateAdministrationContent, setEstateAdministrationContent] = useState<string[]>([]);
   const [claimsBenefitsContent, setClaimsBenefitsContent] = useState<string[]>([]);
   const [accountClosureTransferContent, setAccountClosureTransferContent] = useState<string[]>([]);
+  const [governmentLicensingContent, setGovernmentLicensingContent] = useState<string[]>([]);
   useEffect(() => {
     if (!database || !dek) return;
     void Promise.all([
@@ -92,7 +94,8 @@ export function BinderPreview({
       createEncryptedRepository(database, dek, 'EstateAdministrationTask', estateAdministrationSchema).list(),
       createEncryptedRepository(database, dek, 'ClaimsBenefitsRecord', claimsBenefitsSchema).list(),
       createEncryptedRepository(database, dek, 'AccountClosureTransferRecord', accountClosureTransferSchema).list(),
-    ]).then(([letters, households, plans, people, certificates, estateTasks, claims, accountActions]) => {
+      createEncryptedRepository(database, dek, 'GovernmentLicensingRecord', governmentLicensingSchema).list(),
+    ]).then(([letters, households, plans, people, certificates, estateTasks, claims, accountActions, licenses]) => {
       setLetterContent(
         letters
           .filter((letter) => letter.includePrint)
@@ -145,6 +148,20 @@ export function BinderPreview({
         `${t('account_closure_transfer_tracker.completionDate', { ns: 'v2' })}: ____ / ____ / ______    ${t('account_closure_transfer_tracker.initials', { ns: 'v2' })}: __________    ${t('account_closure_transfer_tracker.confirmationNumber', { ns: 'v2' })}: __________`,
       ]);
       setAccountClosureTransferContent(accountContent.length > 0 ? ['[PAGE_BREAK]', ...accountContent] : emptyAccountClosureTransferContent);
+      const licensingContent = licenses.filter((record) => record.includeInPrint).flatMap((record) => [
+        'Continuity Binder', 'LEGAL, TAX & GOVERNMENT', t('government_licensing_records.title', { ns: 'v2' }), `${t('prepared', { ns: 'rendering' })}: ${new Date().toLocaleDateString()}`,
+        `${names.get(record.personId) ?? t('government_licensing_records.person', { ns: 'v2' })} — ${record.credentialType} — ${record.issuingAuthority}`,
+        `${t('government_licensing_records.expiration', { ns: 'v2' })}: ${record.expiration} | ${t('government_licensing_records.documentLocation', { ns: 'v2' })}: ${record.documentLocation}`,
+        `☐ ${t('government_licensing_records.renew', { ns: 'v2' })}   ☐ ${t('government_licensing_records.cancel', { ns: 'v2' })}   ☐ ${t('government_licensing_records.transfer', { ns: 'v2' })}   ☐ ${t('government_licensing_records.preserve', { ns: 'v2' })}   ☐ ${t('government_licensing_records.review', { ns: 'v2' })}`,
+        `${t('government_licensing_records.newExpiry', { ns: 'v2' })}: ____ / ____ / ______    ${t('government_licensing_records.reference', { ns: 'v2' })}: __________`,
+        `${t('government_licensing_records.notes', { ns: 'v2' })}: ________________________________________________________________`,
+      ]);
+      setGovernmentLicensingContent(licensingContent.length > 0 ? ['[PAGE_BREAK]', ...licensingContent] : [
+        '[PAGE_BREAK]', 'Continuity Binder', 'LEGAL, TAX & GOVERNMENT', t('government_licensing_records.title', { ns: 'v2' }), `${t('prepared', { ns: 'rendering' })}: ${new Date().toLocaleDateString()}`,
+        t('government_licensing_records.intro', { ns: 'v2' }), t('government_licensing_records.caution', { ns: 'v2' }),
+        `☐ ${t('government_licensing_records.renew', { ns: 'v2' })}   ☐ ${t('government_licensing_records.cancel', { ns: 'v2' })}   ☐ ${t('government_licensing_records.transfer', { ns: 'v2' })}   ☐ ${t('government_licensing_records.preserve', { ns: 'v2' })}   ☐ ${t('government_licensing_records.review', { ns: 'v2' })}`,
+        `${t('government_licensing_records.newExpiry', { ns: 'v2' })}: ____ / ____ / ______    ${t('government_licensing_records.reference', { ns: 'v2' })}: __________`, `${t('government_licensing_records.notes', { ns: 'v2' })}: ________________________________________________________________`,
+      ]);
     });
   }, [database, dek]);
   const sectionTitles = useMemo(
@@ -159,6 +176,7 @@ export function BinderPreview({
           'estateAdministration',
           'claimsBenefits',
           'accountClosureTransfer',
+          'governmentLicensing',
           'first72',
           'doNot',
           'notify',
@@ -184,7 +202,7 @@ export function BinderPreview({
           'locations',
           'contacts',
           'review',
-        ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : key === 'deathCertificates' ? t('death_certificate_tracker.title', { ns: 'v2' }) : key === 'estateAdministration' ? t('estate_administration_tracker.title', { ns: 'v2' }) : key === 'claimsBenefits' ? t('claims_benefits_tracker.title', { ns: 'v2' }) : key === 'accountClosureTransfer' ? t('account_closure_transfer_tracker.title', { ns: 'v2' }) : t(`sectionNames.${key}`)]),
+        ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : key === 'deathCertificates' ? t('death_certificate_tracker.title', { ns: 'v2' }) : key === 'estateAdministration' ? t('estate_administration_tracker.title', { ns: 'v2' }) : key === 'claimsBenefits' ? t('claims_benefits_tracker.title', { ns: 'v2' }) : key === 'accountClosureTransfer' ? t('account_closure_transfer_tracker.title', { ns: 'v2' }) : key === 'governmentLicensing' ? t('government_licensing_records.title', { ns: 'v2' }) : t(`sectionNames.${key}`)]),
       ),
     [t],
   );
@@ -194,9 +212,9 @@ export function BinderPreview({
         sectionTitles,
         choices,
         { cover: includeCover },
-        { letters: letterContent, incapacity: incapacityContent, deathCertificates: deathCertificateContent, estateAdministration: estateAdministrationContent, claimsBenefits: claimsBenefitsContent, accountClosureTransfer: accountClosureTransferContent },
+        { letters: letterContent, incapacity: incapacityContent, deathCertificates: deathCertificateContent, estateAdministration: estateAdministrationContent, claimsBenefits: claimsBenefitsContent, accountClosureTransfer: accountClosureTransferContent, governmentLicensing: governmentLicensingContent },
       ),
-    [sectionTitles, choices, includeCover, letterContent, incapacityContent, deathCertificateContent, estateAdministrationContent, claimsBenefitsContent, accountClosureTransferContent],
+    [sectionTitles, choices, includeCover, letterContent, incapacityContent, deathCertificateContent, estateAdministrationContent, claimsBenefitsContent, accountClosureTransferContent, governmentLicensingContent],
   );
   return (
     <section className={`section-page print-${pageSize}`}>
