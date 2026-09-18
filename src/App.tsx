@@ -54,6 +54,7 @@ import { AccountClosureTransferTracker } from './features/v2/AccountClosureTrans
 import { GovernmentLicensingRecords } from './features/v2/GovernmentLicensingRecords';
 import { MilitaryVeteranRecord } from './features/v2/MilitaryVeteranRecord';
 import { ForeignPropertyInternationalAffairs } from './features/v2/ForeignPropertyInternationalAffairs';
+import { TravelTimeshareVacationProperty } from './features/v2/TravelTimeshareVacationProperty';
 
 const navigation = [
   ['overview', 'overview'],
@@ -70,6 +71,7 @@ const navigation = [
   ['governmentLicensingRecords', 'legal/licenses'],
   ['militaryVeteranRecord', 'legal/military'],
   ['foreignPropertyInternationalAffairs', 'legal/international'],
+  ['travelTimeshareVacationProperty', 'travel/vacation-assets'],
   ['peopleContacts', 'people-contacts'],
   ['legalEstate', 'legal-estate'],
   ['moneyBenefits', 'money-benefits'],
@@ -735,6 +737,8 @@ export function App() {
                   <MilitaryVeteranRecord database={database} dek={dek!} />
                 ) : path === 'legal/international' ? (
                   <ForeignPropertyInternationalAffairs database={database} dek={dek!} />
+                ) : path === 'travel/vacation-assets' ? (
+                  <TravelTimeshareVacationProperty database={database} dek={dek!} />
                 ) : path === 'legal-estate' ? (
                   <LegalEstate database={database} dek={dek!} />
                 ) : path === 'money-benefits' ? (

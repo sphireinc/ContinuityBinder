@@ -17,6 +17,7 @@ import { accountClosureTransferSchema } from '../v2/AccountClosureTransferTracke
 import { governmentLicensingSchema } from '../v2/GovernmentLicensingRecords';
 import { militaryVeteranSchema } from '../v2/MilitaryVeteranRecord';
 import { foreignPropertySchema } from '../v2/ForeignPropertyInternationalAffairs';
+import { travelTimeshareSchema } from '../v2/TravelTimeshareVacationProperty';
 
 export function ReadableArchiveExport({
   database,
@@ -43,6 +44,7 @@ export function ReadableArchiveExport({
   const [governmentLicensingContent, setGovernmentLicensingContent] = useState<string[]>([]);
   const [militaryVeteranContent, setMilitaryVeteranContent] = useState<string[]>([]);
   const [foreignInternationalContent, setForeignInternationalContent] = useState<string[]>([]);
+  const [travelVacationContent, setTravelVacationContent] = useState<string[]>([]);
   useEffect(() => {
     if (!database) return;
     void Promise.all([
@@ -67,7 +69,8 @@ export function ReadableArchiveExport({
       createEncryptedRepository(database, dek, 'GovernmentLicensingRecord', governmentLicensingSchema).list(),
       createEncryptedRepository(database, dek, 'MilitaryVeteranRecord', militaryVeteranSchema).list(),
       createEncryptedRepository(database, dek, 'ForeignPropertyRecord', foreignPropertySchema).list(),
-    ]).then(([benefits, people, letters, plans, certificates, estateTasks, claims, accountActions, licenses, militaryRecords, foreignRecords]) => {
+      createEncryptedRepository(database, dek, 'TravelTimeshareRecord', travelTimeshareSchema).list(),
+    ]).then(([benefits, people, letters, plans, certificates, estateTasks, claims, accountActions, licenses, militaryRecords, foreignRecords, travelRecords]) => {
       const names = new Map(
         people.map((person) => [
           person.id,
@@ -192,6 +195,20 @@ export function ReadableArchiveExport({
         `- [ ] ${t('foreign_property_international_affairs.contactReached', { ns: 'v2' })}   - [ ] ${t('foreign_property_international_affairs.documentsLocated', { ns: 'v2' })}   - [ ] ${t('foreign_property_international_affairs.requirementsReviewed', { ns: 'v2' })}`,
         `${t('foreign_property_international_affairs.date', { ns: 'v2' })}: ____ / ____ / ______    ${t('foreign_property_international_affairs.initials', { ns: 'v2' })}: __________    ${t('foreign_property_international_affairs.reference', { ns: 'v2' })}: __________`, `${t('foreign_property_international_affairs.notes', { ns: 'v2' })}: ________________________________________________________________`,
       ]);
+      const travelContent = travelRecords.filter((record) => record.includeInReadableExport).flatMap((record) => [
+        'Continuity Binder', 'TRAVEL & OTHER ASSETS', t('travel_timeshare_vacation_property.title', { ns: 'v2' }), `${t('prepared', { ns: 'rendering' })}: ${new Date().toLocaleDateString()}`,
+        `${record.assetProgram} — ${record.type} — ${names.get(record.ownerId) ?? t('travel_timeshare_vacation_property.owner', { ns: 'v2' })}`,
+        `${t('travel_timeshare_vacation_property.locationProvider', { ns: 'v2' })}: ${record.locationProvider} | ${t('travel_timeshare_vacation_property.annualCost', { ns: 'v2' })}: ${record.annualCost}`,
+        `- [ ] ${t('travel_timeshare_vacation_property.continue', { ns: 'v2' })}   - [ ] ${t('travel_timeshare_vacation_property.transfer', { ns: 'v2' })}   - [ ] ${t('travel_timeshare_vacation_property.sell', { ns: 'v2' })}   - [ ] ${t('travel_timeshare_vacation_property.cancel', { ns: 'v2' })}   - [ ] ${t('travel_timeshare_vacation_property.review', { ns: 'v2' })}`,
+        `${t('travel_timeshare_vacation_property.date', { ns: 'v2' })}: ____ / ____ / ______    ${t('travel_timeshare_vacation_property.initials', { ns: 'v2' })}: __________    ${t('travel_timeshare_vacation_property.reference', { ns: 'v2' })}: __________`,
+        `${t('travel_timeshare_vacation_property.notes', { ns: 'v2' })}: ________________________________________________________________`,
+      ]);
+      setTravelVacationContent(travelContent.length > 0 ? ['[PAGE_BREAK]', ...travelContent] : [
+        '[PAGE_BREAK]', 'Continuity Binder', 'TRAVEL & OTHER ASSETS', t('travel_timeshare_vacation_property.title', { ns: 'v2' }), `${t('prepared', { ns: 'rendering' })}: ${new Date().toLocaleDateString()}`,
+        t('travel_timeshare_vacation_property.intro', { ns: 'v2' }), t('travel_timeshare_vacation_property.caution', { ns: 'v2' }),
+        `- [ ] ${t('travel_timeshare_vacation_property.continue', { ns: 'v2' })}   - [ ] ${t('travel_timeshare_vacation_property.transfer', { ns: 'v2' })}   - [ ] ${t('travel_timeshare_vacation_property.sell', { ns: 'v2' })}   - [ ] ${t('travel_timeshare_vacation_property.cancel', { ns: 'v2' })}   - [ ] ${t('travel_timeshare_vacation_property.review', { ns: 'v2' })}`,
+        `${t('travel_timeshare_vacation_property.date', { ns: 'v2' })}: ____ / ____ / ______    ${t('travel_timeshare_vacation_property.initials', { ns: 'v2' })}: __________    ${t('travel_timeshare_vacation_property.reference', { ns: 'v2' })}: __________`, `${t('travel_timeshare_vacation_property.notes', { ns: 'v2' })}: ________________________________________________________________`,
+      ]);
     });
   }, [database, dek]);
   const exportArchive = async () => {
@@ -208,6 +225,7 @@ export function ReadableArchiveExport({
         'governmentLicensing',
         'militaryVeteran',
         'foreignInternational',
+        'travelVacation',
         'first72',
         'doNot',
         'notify',
@@ -233,7 +251,7 @@ export function ReadableArchiveExport({
         'locations',
         'contacts',
         'review',
-      ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : key === 'deathCertificates' ? t('death_certificate_tracker.title', { ns: 'v2' }) : key === 'estateAdministration' ? t('estate_administration_tracker.title', { ns: 'v2' }) : key === 'claimsBenefits' ? t('claims_benefits_tracker.title', { ns: 'v2' }) : key === 'accountClosureTransfer' ? t('account_closure_transfer_tracker.title', { ns: 'v2' }) : key === 'governmentLicensing' ? t('government_licensing_records.title', { ns: 'v2' }) : key === 'militaryVeteran' ? t('military_veteran_record.title', { ns: 'v2' }) : key === 'foreignInternational' ? t('foreign_property_international_affairs.title', { ns: 'v2' }) : key]),
+      ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : key === 'deathCertificates' ? t('death_certificate_tracker.title', { ns: 'v2' }) : key === 'estateAdministration' ? t('estate_administration_tracker.title', { ns: 'v2' }) : key === 'claimsBenefits' ? t('claims_benefits_tracker.title', { ns: 'v2' }) : key === 'accountClosureTransfer' ? t('account_closure_transfer_tracker.title', { ns: 'v2' }) : key === 'governmentLicensing' ? t('government_licensing_records.title', { ns: 'v2' }) : key === 'militaryVeteran' ? t('military_veteran_record.title', { ns: 'v2' }) : key === 'foreignInternational' ? t('foreign_property_international_affairs.title', { ns: 'v2' }) : key === 'travelVacation' ? t('travel_timeshare_vacation_property.title', { ns: 'v2' }) : key]),
     );
     const blob = await exportReadableArchive(
       buildBinderDocument(
@@ -246,7 +264,7 @@ export function ReadableArchiveExport({
           digital: true,
         },
         {},
-        { insurance: insuranceContent, letters: letterContent, incapacity: incapacityContent, deathCertificates: deathCertificateContent, estateAdministration: estateAdministrationContent, claimsBenefits: claimsBenefitsContent, accountClosureTransfer: accountClosureTransferContent, governmentLicensing: governmentLicensingContent, militaryVeteran: militaryVeteranContent, foreignInternational: foreignInternationalContent },
+        { insurance: insuranceContent, letters: letterContent, incapacity: incapacityContent, deathCertificates: deathCertificateContent, estateAdministration: estateAdministrationContent, claimsBenefits: claimsBenefitsContent, accountClosureTransfer: accountClosureTransferContent, governmentLicensing: governmentLicensingContent, militaryVeteran: militaryVeteranContent, foreignInternational: foreignInternationalContent, travelVacation: travelVacationContent },
       ),
       i18n.language,
       household,

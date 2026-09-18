@@ -44,6 +44,7 @@ export const DEFAULT_BINDER_ORDER = [
   'governmentLicensing',
   'militaryVeteran',
   'foreignInternational',
+  'travelVacation',
   'first72',
   'doNot',
   'notify',
