@@ -19,6 +19,7 @@ import { militaryVeteranSchema } from '../v2/MilitaryVeteranRecord';
 import { foreignPropertySchema } from '../v2/ForeignPropertyInternationalAffairs';
 import { travelTimeshareSchema } from '../v2/TravelTimeshareVacationProperty';
 import { loyaltyPointsSchema } from '../v2/LoyaltyPointsRewards';
+import { outstandingPurchasesSchema } from '../v2/OutstandingPurchasesRefunds';
 
 export function ReadableArchiveExport({
   database,
@@ -47,6 +48,7 @@ export function ReadableArchiveExport({
   const [foreignInternationalContent, setForeignInternationalContent] = useState<string[]>([]);
   const [travelVacationContent, setTravelVacationContent] = useState<string[]>([]);
   const [loyaltyRewardsContent, setLoyaltyRewardsContent] = useState<string[]>([]);
+  const [outstandingPurchasesContent, setOutstandingPurchasesContent] = useState<string[]>([]);
   useEffect(() => {
     if (!database) return;
     void Promise.all([
@@ -73,7 +75,8 @@ export function ReadableArchiveExport({
       createEncryptedRepository(database, dek, 'ForeignPropertyRecord', foreignPropertySchema).list(),
       createEncryptedRepository(database, dek, 'TravelTimeshareRecord', travelTimeshareSchema).list(),
       createEncryptedRepository(database, dek, 'LoyaltyPointsRecord', loyaltyPointsSchema).list(),
-    ]).then(([benefits, people, letters, plans, certificates, estateTasks, claims, accountActions, licenses, militaryRecords, foreignRecords, travelRecords, loyaltyRecords]) => {
+      createEncryptedRepository(database, dek, 'OutstandingPurchaseRecord', outstandingPurchasesSchema).list(),
+    ]).then(([benefits, people, letters, plans, certificates, estateTasks, claims, accountActions, licenses, militaryRecords, foreignRecords, travelRecords, loyaltyRecords, outstandingRecords]) => {
       const names = new Map(
         people.map((person) => [
           person.id,
@@ -226,6 +229,20 @@ export function ReadableArchiveExport({
         `- [ ] ${t('loyalty_points_rewards.providerContacted', { ns: 'v2' })}   - [ ] ${t('loyalty_points_rewards.transferredRedeemed', { ns: 'v2' })}   - [ ] ${t('loyalty_points_rewards.closed', { ns: 'v2' })}`,
         `${t('loyalty_points_rewards.date', { ns: 'v2' })}: ____ / ____ / ______    ${t('loyalty_points_rewards.initials', { ns: 'v2' })}: __________    ${t('loyalty_points_rewards.reference', { ns: 'v2' })}: __________`, `${t('loyalty_points_rewards.notes', { ns: 'v2' })}: ________________________________________________________________`,
       ]);
+      const outstandingContent = outstandingRecords.filter((record) => record.includeInReadableExport).flatMap((record) => [
+        'Continuity Binder', 'MONEY & BENEFITS', t('outstanding_purchases_deposits_refunds.title', { ns: 'v2' }), `${t('prepared', { ns: 'rendering' })}: ${new Date().toLocaleDateString()}`,
+        `${record.merchantProvider} — ${record.type} — ${record.amount}`,
+        `${t('outstanding_purchases_deposits_refunds.datePaid', { ns: 'v2' })}: ${record.datePaid} | ${t('outstanding_purchases_deposits_refunds.orderReference', { ns: 'v2' })}: ${record.orderReference}`,
+        `- [ ] ${t('outstanding_purchases_deposits_refunds.contacted', { ns: 'v2' })}   - [ ] ${t('outstanding_purchases_deposits_refunds.refundReceived', { ns: 'v2' })}   - [ ] ${t('outstanding_purchases_deposits_refunds.serviceCompleted', { ns: 'v2' })}   - [ ] ${t('outstanding_purchases_deposits_refunds.canceled', { ns: 'v2' })}`,
+        `${t('outstanding_purchases_deposits_refunds.actualAmount', { ns: 'v2' })}: __________   ${t('outstanding_purchases_deposits_refunds.date', { ns: 'v2' })}: ____ / ____ / ______   ${t('outstanding_purchases_deposits_refunds.reference', { ns: 'v2' })}: __________`,
+        `${t('outstanding_purchases_deposits_refunds.notes', { ns: 'v2' })}: ________________________________________________________________`,
+      ]);
+      setOutstandingPurchasesContent(outstandingContent.length > 0 ? ['[PAGE_BREAK]', ...outstandingContent] : [
+        '[PAGE_BREAK]', 'Continuity Binder', 'MONEY & BENEFITS', t('outstanding_purchases_deposits_refunds.title', { ns: 'v2' }), `${t('prepared', { ns: 'rendering' })}: ${new Date().toLocaleDateString()}`,
+        t('outstanding_purchases_deposits_refunds.intro', { ns: 'v2' }), t('outstanding_purchases_deposits_refunds.caution', { ns: 'v2' }),
+        `- [ ] ${t('outstanding_purchases_deposits_refunds.contacted', { ns: 'v2' })}   - [ ] ${t('outstanding_purchases_deposits_refunds.refundReceived', { ns: 'v2' })}   - [ ] ${t('outstanding_purchases_deposits_refunds.serviceCompleted', { ns: 'v2' })}   - [ ] ${t('outstanding_purchases_deposits_refunds.canceled', { ns: 'v2' })}`,
+        `${t('outstanding_purchases_deposits_refunds.actualAmount', { ns: 'v2' })}: __________   ${t('outstanding_purchases_deposits_refunds.date', { ns: 'v2' })}: ____ / ____ / ______   ${t('outstanding_purchases_deposits_refunds.reference', { ns: 'v2' })}: __________`, `${t('outstanding_purchases_deposits_refunds.notes', { ns: 'v2' })}: ________________________________________________________________`,
+      ]);
     });
   }, [database, dek]);
   const exportArchive = async () => {
@@ -244,6 +261,7 @@ export function ReadableArchiveExport({
         'foreignInternational',
         'travelVacation',
         'loyaltyRewards',
+        'outstandingPurchases',
         'first72',
         'doNot',
         'notify',
@@ -269,7 +287,7 @@ export function ReadableArchiveExport({
         'locations',
         'contacts',
         'review',
-      ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : key === 'deathCertificates' ? t('death_certificate_tracker.title', { ns: 'v2' }) : key === 'estateAdministration' ? t('estate_administration_tracker.title', { ns: 'v2' }) : key === 'claimsBenefits' ? t('claims_benefits_tracker.title', { ns: 'v2' }) : key === 'accountClosureTransfer' ? t('account_closure_transfer_tracker.title', { ns: 'v2' }) : key === 'governmentLicensing' ? t('government_licensing_records.title', { ns: 'v2' }) : key === 'militaryVeteran' ? t('military_veteran_record.title', { ns: 'v2' }) : key === 'foreignInternational' ? t('foreign_property_international_affairs.title', { ns: 'v2' }) : key === 'travelVacation' ? t('travel_timeshare_vacation_property.title', { ns: 'v2' }) : key === 'loyaltyRewards' ? t('loyalty_points_rewards.title', { ns: 'v2' }) : key]),
+      ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : key === 'deathCertificates' ? t('death_certificate_tracker.title', { ns: 'v2' }) : key === 'estateAdministration' ? t('estate_administration_tracker.title', { ns: 'v2' }) : key === 'claimsBenefits' ? t('claims_benefits_tracker.title', { ns: 'v2' }) : key === 'accountClosureTransfer' ? t('account_closure_transfer_tracker.title', { ns: 'v2' }) : key === 'governmentLicensing' ? t('government_licensing_records.title', { ns: 'v2' }) : key === 'militaryVeteran' ? t('military_veteran_record.title', { ns: 'v2' }) : key === 'foreignInternational' ? t('foreign_property_international_affairs.title', { ns: 'v2' }) : key === 'travelVacation' ? t('travel_timeshare_vacation_property.title', { ns: 'v2' }) : key === 'loyaltyRewards' ? t('loyalty_points_rewards.title', { ns: 'v2' }) : key === 'outstandingPurchases' ? t('outstanding_purchases_deposits_refunds.title', { ns: 'v2' }) : key]),
     );
     const blob = await exportReadableArchive(
       buildBinderDocument(
@@ -282,7 +300,7 @@ export function ReadableArchiveExport({
           digital: true,
         },
         {},
-        { insurance: insuranceContent, letters: letterContent, incapacity: incapacityContent, deathCertificates: deathCertificateContent, estateAdministration: estateAdministrationContent, claimsBenefits: claimsBenefitsContent, accountClosureTransfer: accountClosureTransferContent, governmentLicensing: governmentLicensingContent, militaryVeteran: militaryVeteranContent, foreignInternational: foreignInternationalContent, travelVacation: travelVacationContent, loyaltyRewards: loyaltyRewardsContent },
+        { insurance: insuranceContent, letters: letterContent, incapacity: incapacityContent, deathCertificates: deathCertificateContent, estateAdministration: estateAdministrationContent, claimsBenefits: claimsBenefitsContent, accountClosureTransfer: accountClosureTransferContent, governmentLicensing: governmentLicensingContent, militaryVeteran: militaryVeteranContent, foreignInternational: foreignInternationalContent, travelVacation: travelVacationContent, loyaltyRewards: loyaltyRewardsContent, outstandingPurchases: outstandingPurchasesContent },
       ),
       i18n.language,
       household,

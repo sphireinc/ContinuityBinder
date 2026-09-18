@@ -1,0 +1,37 @@
+import { expect, test } from '@playwright/test';
+import { statSync } from 'node:fs';
+
+test('prepares an outstanding purchase record with blank survivor actions', async ({ page }) => {
+  await page.goto('/binder/setup');
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Begin Binder Setup' }).click();
+  await page.getByRole('textbox', { name: 'Passphrase', exact: true }).fill('a deliberately long passphrase');
+  await page.getByRole('textbox', { name: 'Confirm passphrase' }).fill('a deliberately long passphrase');
+  await page.getByRole('checkbox', { name: 'I understand that Continuity Binder cannot recover this passphrase.' }).check();
+  await page.getByRole('button', { name: 'Create encrypted binder' }).click();
+  await page.getByRole('link', { name: 'Outstanding Purchases / Deposits / Refunds' }).click();
+  await expect(page.getByText(/No outstanding purchases \/ deposits \/ refunds records/i)).toBeVisible();
+  await page.getByLabel('Merchant/provider').fill('Synthetic merchant');
+  await page.getByLabel('Type').fill('Deposit');
+  await page.getByLabel('Amount').fill('Unknown');
+  await page.getByRole('button', { name: 'Save record locally' }).click();
+  await expect(page.getByRole('status')).toContainText('Saved locally');
+  await expect(page.getByText(/Synthetic merchant — Deposit — Unknown/)).toBeVisible();
+  await expect(page.getByText(/Contacted.*Refund received.*Service completed.*Canceled/)).toBeVisible();
+  await page.getByRole('link', { name: 'Binder Preview' }).click();
+  const section = page.locator('.binder-section-outstandingPurchases');
+  await expect(section).toContainText('Outstanding Purchases / Deposits / Refunds');
+  await expect(section).toContainText('☐ Contacted');
+  await expect(section.locator('.page-break')).toHaveCount(1);
+  await page.emulateMedia({ media: 'print' });
+  const letterPdf = test.info().outputPath('outstanding-purchases-letter.pdf');
+  await page.pdf({ format: 'Letter', printBackground: true, path: letterPdf });
+  expect(statSync(letterPdf).size).toBeGreaterThan(0);
+  await page.emulateMedia({ media: 'screen' });
+  await page.getByLabel('Page size').selectOption('a4');
+  await page.emulateMedia({ media: 'print' });
+  const a4Pdf = test.info().outputPath('outstanding-purchases-a4.pdf');
+  await page.pdf({ format: 'A4', printBackground: true, path: a4Pdf });
+  expect(statSync(a4Pdf).size).toBeGreaterThan(0);
+});

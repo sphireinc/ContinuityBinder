@@ -56,6 +56,7 @@ import { MilitaryVeteranRecord } from './features/v2/MilitaryVeteranRecord';
 import { ForeignPropertyInternationalAffairs } from './features/v2/ForeignPropertyInternationalAffairs';
 import { TravelTimeshareVacationProperty } from './features/v2/TravelTimeshareVacationProperty';
 import { LoyaltyPointsRewards } from './features/v2/LoyaltyPointsRewards';
+import { OutstandingPurchasesRefunds } from './features/v2/OutstandingPurchasesRefunds';
 
 const navigation = [
   ['overview', 'overview'],
@@ -74,6 +75,7 @@ const navigation = [
   ['foreignPropertyInternationalAffairs', 'legal/international'],
   ['travelTimeshareVacationProperty', 'travel/vacation-assets'],
   ['loyaltyPointsRewards', 'money/loyalty'],
+  ['outstandingPurchasesRefunds', 'money/outstanding-purchases'],
   ['peopleContacts', 'people-contacts'],
   ['legalEstate', 'legal-estate'],
   ['moneyBenefits', 'money-benefits'],
@@ -742,6 +744,8 @@ export function App() {
                   <TravelTimeshareVacationProperty database={database} dek={dek!} />
                 ) : path === 'money/loyalty' ? (
                   <LoyaltyPointsRewards database={database} dek={dek!} />
+                ) : path === 'money/outstanding-purchases' ? (
+                  <OutstandingPurchasesRefunds database={database} dek={dek!} />
                 ) : path === 'legal-estate' ? (
                   <LegalEstate database={database} dek={dek!} />
                 ) : path === 'money-benefits' ? (

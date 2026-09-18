@@ -46,6 +46,7 @@ export const DEFAULT_BINDER_ORDER = [
   'foreignInternational',
   'travelVacation',
   'loyaltyRewards',
+  'outstandingPurchases',
   'first72',
   'doNot',
   'notify',
