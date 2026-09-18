@@ -43,6 +43,7 @@ export const DEFAULT_BINDER_ORDER = [
   'accountClosureTransfer',
   'governmentLicensing',
   'militaryVeteran',
+  'foreignInternational',
   'first72',
   'doNot',
   'notify',

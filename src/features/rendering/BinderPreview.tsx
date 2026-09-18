@@ -18,6 +18,7 @@ import { claimsBenefitsSchema } from '../v2/ClaimsBenefitsTracker';
 import { accountClosureTransferSchema } from '../v2/AccountClosureTransferTracker';
 import { governmentLicensingSchema } from '../v2/GovernmentLicensingRecords';
 import { militaryVeteranSchema } from '../v2/MilitaryVeteranRecord';
+import { foreignPropertySchema } from '../v2/ForeignPropertyInternationalAffairs';
 
 export function BinderPreview({
   database,
@@ -70,6 +71,7 @@ export function BinderPreview({
   const [accountClosureTransferContent, setAccountClosureTransferContent] = useState<string[]>([]);
   const [governmentLicensingContent, setGovernmentLicensingContent] = useState<string[]>([]);
   const [militaryVeteranContent, setMilitaryVeteranContent] = useState<string[]>([]);
+  const [foreignInternationalContent, setForeignInternationalContent] = useState<string[]>([]);
   useEffect(() => {
     if (!database || !dek) return;
     void Promise.all([
@@ -98,7 +100,8 @@ export function BinderPreview({
       createEncryptedRepository(database, dek, 'AccountClosureTransferRecord', accountClosureTransferSchema).list(),
       createEncryptedRepository(database, dek, 'GovernmentLicensingRecord', governmentLicensingSchema).list(),
       createEncryptedRepository(database, dek, 'MilitaryVeteranRecord', militaryVeteranSchema).list(),
-    ]).then(([letters, households, plans, people, certificates, estateTasks, claims, accountActions, licenses, militaryRecords]) => {
+      createEncryptedRepository(database, dek, 'ForeignPropertyRecord', foreignPropertySchema).list(),
+    ]).then(([letters, households, plans, people, certificates, estateTasks, claims, accountActions, licenses, militaryRecords, foreignRecords]) => {
       setLetterContent(
         letters
           .filter((letter) => letter.includePrint)
@@ -179,6 +182,20 @@ export function BinderPreview({
         `☐ ${t('military_veteran_record.dd214Located', { ns: 'v2' })}   ☐ ${t('military_veteran_record.vaContacted', { ns: 'v2' })}   ☐ ${t('military_veteran_record.honorsVerified', { ns: 'v2' })}`,
         `${t('military_veteran_record.date', { ns: 'v2' })}: ____ / ____ / ______    ${t('military_veteran_record.initials', { ns: 'v2' })}: __________    ${t('military_veteran_record.reference', { ns: 'v2' })}: __________`, `${t('military_veteran_record.notes', { ns: 'v2' })}: ________________________________________________________________`,
       ]);
+      const foreignContent = foreignRecords.filter((record) => record.includeInPrint).flatMap((record) => [
+        'Continuity Binder', 'LEGAL, TAX & GOVERNMENT', t('foreign_property_international_affairs.title', { ns: 'v2' }), `${t('prepared', { ns: 'rendering' })}: ${new Date().toLocaleDateString()}`,
+        `${record.country} — ${record.matterType} — ${names.get(record.personId) ?? t('foreign_property_international_affairs.person', { ns: 'v2' })}`,
+        `${t('foreign_property_international_affairs.localAttorneyContact', { ns: 'v2' })}: ${record.localAttorneyContact} | ${t('foreign_property_international_affairs.documentLocation', { ns: 'v2' })}: ${record.documentLocation}`,
+        `☐ ${t('foreign_property_international_affairs.contactReached', { ns: 'v2' })}   ☐ ${t('foreign_property_international_affairs.documentsLocated', { ns: 'v2' })}   ☐ ${t('foreign_property_international_affairs.requirementsReviewed', { ns: 'v2' })}`,
+        `${t('foreign_property_international_affairs.date', { ns: 'v2' })}: ____ / ____ / ______    ${t('foreign_property_international_affairs.initials', { ns: 'v2' })}: __________    ${t('foreign_property_international_affairs.reference', { ns: 'v2' })}: __________`,
+        `${t('foreign_property_international_affairs.notes', { ns: 'v2' })}: ________________________________________________________________`,
+      ]);
+      setForeignInternationalContent(foreignContent.length > 0 ? ['[PAGE_BREAK]', ...foreignContent] : [
+        '[PAGE_BREAK]', 'Continuity Binder', 'LEGAL, TAX & GOVERNMENT', t('foreign_property_international_affairs.title', { ns: 'v2' }), `${t('prepared', { ns: 'rendering' })}: ${new Date().toLocaleDateString()}`,
+        t('foreign_property_international_affairs.intro', { ns: 'v2' }), t('foreign_property_international_affairs.caution', { ns: 'v2' }),
+        `☐ ${t('foreign_property_international_affairs.contactReached', { ns: 'v2' })}   ☐ ${t('foreign_property_international_affairs.documentsLocated', { ns: 'v2' })}   ☐ ${t('foreign_property_international_affairs.requirementsReviewed', { ns: 'v2' })}`,
+        `${t('foreign_property_international_affairs.date', { ns: 'v2' })}: ____ / ____ / ______    ${t('foreign_property_international_affairs.initials', { ns: 'v2' })}: __________    ${t('foreign_property_international_affairs.reference', { ns: 'v2' })}: __________`, `${t('foreign_property_international_affairs.notes', { ns: 'v2' })}: ________________________________________________________________`,
+      ]);
     });
   }, [database, dek]);
   const sectionTitles = useMemo(
@@ -195,6 +212,7 @@ export function BinderPreview({
           'accountClosureTransfer',
           'governmentLicensing',
           'militaryVeteran',
+          'foreignInternational',
           'first72',
           'doNot',
           'notify',
@@ -220,7 +238,7 @@ export function BinderPreview({
           'locations',
           'contacts',
           'review',
-        ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : key === 'deathCertificates' ? t('death_certificate_tracker.title', { ns: 'v2' }) : key === 'estateAdministration' ? t('estate_administration_tracker.title', { ns: 'v2' }) : key === 'claimsBenefits' ? t('claims_benefits_tracker.title', { ns: 'v2' }) : key === 'accountClosureTransfer' ? t('account_closure_transfer_tracker.title', { ns: 'v2' }) : key === 'governmentLicensing' ? t('government_licensing_records.title', { ns: 'v2' }) : key === 'militaryVeteran' ? t('military_veteran_record.title', { ns: 'v2' }) : t(`sectionNames.${key}`)]),
+        ].map((key) => [key, key === 'incapacity' ? t('incapacity_continuity_plan.title', { ns: 'v2' }) : key === 'deathCertificates' ? t('death_certificate_tracker.title', { ns: 'v2' }) : key === 'estateAdministration' ? t('estate_administration_tracker.title', { ns: 'v2' }) : key === 'claimsBenefits' ? t('claims_benefits_tracker.title', { ns: 'v2' }) : key === 'accountClosureTransfer' ? t('account_closure_transfer_tracker.title', { ns: 'v2' }) : key === 'governmentLicensing' ? t('government_licensing_records.title', { ns: 'v2' }) : key === 'militaryVeteran' ? t('military_veteran_record.title', { ns: 'v2' }) : key === 'foreignInternational' ? t('foreign_property_international_affairs.title', { ns: 'v2' }) : t(`sectionNames.${key}`)]),
       ),
     [t],
   );
@@ -230,9 +248,9 @@ export function BinderPreview({
         sectionTitles,
         choices,
         { cover: includeCover },
-        { letters: letterContent, incapacity: incapacityContent, deathCertificates: deathCertificateContent, estateAdministration: estateAdministrationContent, claimsBenefits: claimsBenefitsContent, accountClosureTransfer: accountClosureTransferContent, governmentLicensing: governmentLicensingContent, militaryVeteran: militaryVeteranContent },
+        { letters: letterContent, incapacity: incapacityContent, deathCertificates: deathCertificateContent, estateAdministration: estateAdministrationContent, claimsBenefits: claimsBenefitsContent, accountClosureTransfer: accountClosureTransferContent, governmentLicensing: governmentLicensingContent, militaryVeteran: militaryVeteranContent, foreignInternational: foreignInternationalContent },
       ),
-    [sectionTitles, choices, includeCover, letterContent, incapacityContent, deathCertificateContent, estateAdministrationContent, claimsBenefitsContent, accountClosureTransferContent, governmentLicensingContent, militaryVeteranContent],
+    [sectionTitles, choices, includeCover, letterContent, incapacityContent, deathCertificateContent, estateAdministrationContent, claimsBenefitsContent, accountClosureTransferContent, governmentLicensingContent, militaryVeteranContent, foreignInternationalContent],
   );
   return (
     <section className={`section-page print-${pageSize}`}>
