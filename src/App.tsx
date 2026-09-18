@@ -68,6 +68,7 @@ import { LifeStoryPersonalHistory } from './features/v2/LifeStoryPersonalHistory
 import { PhotoVideoArchiveMap } from './features/v2/PhotoVideoArchiveMap';
 import { BackupStorageMap } from './features/v2/BackupStorageMap';
 import { HardwareSecurityKeyInventory } from './features/v2/HardwareSecurityKeyInventory';
+import { CryptoDigitalAssetContinuityForm } from './features/v2/CryptoDigitalAssetContinuityForm';
 
 const navigation = [
   ['overview', 'overview'],
@@ -101,6 +102,7 @@ const navigation = [
   ['photoVideoArchiveMap', 'digital/media-map'],
   ['backupStorageMap', 'digital/backup-map'],
   ['hardwareSecurityKeyInventory', 'digital/security-keys'],
+  ['cryptoDigitalAssetContinuity', 'digital/crypto'],
   ['familyContinuity', 'family-continuity'],
   ['taxRecords', 'tax-records'],
   ['wishesLegacy', 'wishes-legacy'],
@@ -804,6 +806,8 @@ export function App() {
                   <BackupStorageMap database={database} dek={dek!} />
                 ) : path === 'digital/security-keys' ? (
                   <HardwareSecurityKeyInventory database={database} dek={dek!} />
+                ) : path === 'digital/crypto' ? (
+                  <CryptoDigitalAssetContinuityForm database={database} dek={dek!} />
                 ) : path === 'family-continuity' ? (
                   <>
                     <FamilyCare database={database} dek={dek!} />

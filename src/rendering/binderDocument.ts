@@ -58,6 +58,7 @@ export const DEFAULT_BINDER_ORDER = [
   'photoVideoArchive',
   'backupStorage',
   'hardwareSecurityKeys',
+  'cryptoDigitalAsset',
   'first72',
   'doNot',
   'notify',

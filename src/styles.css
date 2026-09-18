@@ -142,5 +142,7 @@ p { line-height: 1.5; }
   .binder-section-backupStorage p { min-height: .28in; }
   .binder-section-hardwareSecurityKeys { break-before: page; }
   .binder-section-hardwareSecurityKeys p { min-height: .28in; }
+  .binder-section-cryptoDigitalAsset { break-before: page; }
+  .binder-section-cryptoDigitalAsset p { min-height: .28in; }
 }
 @media print { body.print-running .section-page > *:not(.running-schedule) { display: none !important; } body.print-running .running-schedule { display: block !important; } }
